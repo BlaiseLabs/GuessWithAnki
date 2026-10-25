@@ -294,6 +294,7 @@ def main():
     ap.add_argument("--procs", type=int, default=12)
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--series", action="store_true", help="keep each day's numbers (and words known each week)")
+    ap.add_argument("--config", help="settings to lay over config.json's (e.g. which label sources count)")
     ap.add_argument("--deck-every", type=int, default=0, help="GuessWithAnki's deck_every setting for the planned orders")
     a = ap.parse_args()
     if a.check:
@@ -312,8 +313,8 @@ def main():
         setups["custom"] = (w, a.retention, "your FSRS parameters, %d%% retention" % round(100 * a.retention))
         a.setups = [x for x in a.setups if x != "custom"] + ["custom"]
     col = Collection(a.collection)
-    cfg = run.merged({})
-    an = run.analyse(col, cfg, a.files, use_server=True)
+    cfg = run.merged(json.loads(Path(a.config).read_text(encoding="utf-8")) if a.config else {})
+    an = run.analyse(col, cfg, a.files, use_server=not a.config or cfg["heuristic"].get("meaning") == "embeddings")
     col.close()
     before = run.original_order(a.files, an.new)
     ahead = min(len(before), 60 * a.days)
