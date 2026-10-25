@@ -108,7 +108,10 @@ def main():
     for s in SCENES:
         v = videos[s]
         vd = duration(v)
-        st = json.loads((B / ("starts_%s.json" % s)).read_text())["starts"]
+        sj = json.loads((B / ("starts_%s.json" % s)).read_text())
+        st = sj["starts"]
+        if sj.get("overruns"):
+            print("  %s: beats whose animation outlasts the voice (s): %s" % (s, sj["overruns"]))
         track = np.zeros(int(vd * SR) + SR, np.float32)
         for sid, t0 in st.items():
             clip = read_wav(B / "audio" / ("%s.wav" % sid))

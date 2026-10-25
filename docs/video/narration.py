@@ -94,6 +94,20 @@ SECTIONS = [
 ]
 
 
+# voiced together, one take per block, so the delivery flows; cut back into segments at the pauses between them
+BLOCKS = [
+    ["i01", "i02"],
+    ["d01", "d02"], ["d03", "d04"],
+    ["p01", "p02"], ["p03"],
+    ["s01", "s02", "s03"], ["s04", "s05"],
+    ["m01", "m02", "m03", "m04"], ["m05", "m06"], ["m07", "m08"], ["m09", "m10", "m11", "m12"],
+    ["g01", "g02", "g03"], ["g04", "g05"], ["g06", "g07", "g08"],
+    ["x01", "x02", "x03"], ["x04", "x05", "x06"], ["x07", "x08"],
+    ["l01", "l02", "l03"], ["l04", "l05", "l06"], ["l07", "l08"], ["l09", "l10"], ["l11", "l12"], ["l13"],
+    ["o01", "o02", "o03"],
+]
+
+
 def segments():
     """[(section, id, text, say)]"""
     out = []
@@ -106,4 +120,5 @@ def segments():
 if __name__ == "__main__":
     import json
     import sys
-    json.dump([{"section": a, "id": b, "text": c, "say": d} for a, b, c, d in segments()], sys.stdout, indent=1)
+    json.dump({"segments": [{"section": a, "id": b, "text": c, "say": d} for a, b, c, d in segments()],
+               "blocks": BLOCKS}, sys.stdout, indent=1)

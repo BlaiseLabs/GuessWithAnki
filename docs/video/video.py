@@ -31,6 +31,8 @@ config.background_color = BG
 SEG = {sid: (sec, text) for sec, sid, text, say in segments()}
 _dur = HERE / "build" / "durations.json"
 DUR = json.loads(_dur.read_text()) if _dur.exists() else {}
+if DUR.get("_blocks"):
+    GAP = 0.0                    # (block mode: each beat's length already holds its pause)
 
 
 def dur(sid):
@@ -222,6 +224,7 @@ class Beats(Scene):
     def setup(self):
         self.starts = {}
         self.problems = {}
+        self.overruns = {}
         self.cur = "start"
 
     def play(self, *args, **kw):
@@ -244,12 +247,14 @@ class Beats(Scene):
         rest = end - self.now()
         if rest > 0.02:
             self.wait(rest)
+        elif rest < -0.04:
+            self.overruns[self.cur] = round(-rest, 2)      # (its animation outlasts its voice: a gap opens)
 
     def tear_down(self):
         out = HERE / "build"
         out.mkdir(exist_ok=True)
         (out / ("starts_%s.json" % type(self).__name__)).write_text(
-            json.dumps({"starts": self.starts, "end": round(self.now(), 3)}))
+            json.dumps({"starts": self.starts, "end": round(self.now(), 3), "overruns": self.overruns}))
         if CHECK:
             (out / ("layout_%s.json" % type(self).__name__)).write_text(json.dumps(self.problems, indent=1, ensure_ascii=False))
 
@@ -371,6 +376,9 @@ class S03Python(Beats):
             ("    best = max(cards_left,", INK),
             ("               key=lambda c: score(c, seen))", INK),
             ("    return best", INK))]).arrange(DOWN, aligned_edge=LEFT, buff=0.12)
+        cw = T("m", 26, INK, MONO).width * 1.08                  # (Text drops leading spaces: indent by hand)
+        for line, src in zip(code, ("def", "    best", "               key", "    return")):
+            line.shift(RIGHT * cw * (len(src) - len(src.lstrip(" "))))
         win = bubble(code, PANEL, "#3a4550", 0.4).shift(UP * 0.9 + RIGHT * 0.8)
         self.play(FadeIn(win, shift=UP * 0.2), run_time=0.7)
         langs = VGroup(*[T(s, 34, MUTE, MONO) for s in ("C++", "Rust", "JavaScript", "Go", "Julia", "Java")])
@@ -389,7 +397,7 @@ class S03Python(Beats):
         for s in ("objectively the best", "the fastest", "the most consistently designed", "multithreading: famously easy"):
             c = VGroup(T(s, 34, INK), T("(citation needed)", 22, MUTE)).arrange(DOWN, aligned_edge=LEFT, buff=0.05)
             claims.add(c)
-        claims.arrange(DOWN, aligned_edge=LEFT, buff=0.3).shift(RIGHT * 2.4 + UP * 0.3)
+        claims.arrange(DOWN, aligned_edge=LEFT, buff=0.3).move_to(RIGHT * 2.9 + UP * 0.3)
         per = max(0.6, (dur("p02") - 2.0) / 4)
         for i, c in enumerate(claims):
             self.play(FadeIn(c, shift=LEFT * 0.2), ji.mood_to("doubt" if i % 2 == 0 else "neutral", look=RIGHT), run_time=0.5)
