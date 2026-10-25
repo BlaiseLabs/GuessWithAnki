@@ -1,0 +1,31 @@
+{
+    "search": "",
+    "profile": "auto",
+    "fields": {"word": [], "reading": [], "meaning": []},
+    "mature_days": 21,
+    "guessable": {"reading": 0.6, "meaning": 0.6},
+    "sources": {"crowd": 3, "deck": 3, "llm": 2, "heuristic": 1},
+    "path": {
+        "window": 40,
+        "ahead": 500,
+        "setup": 0.1,
+        "deck_every": 0,
+        "mature_counts": true,
+        "spacing": {"on": false, "after": 4, "growth": 2.0, "max_gap": 400}
+    },
+    "heuristic": {
+        "reading_from": "dictionary",
+        "deck_weight": 3,
+        "reading_full": 0.05,
+        "meaning": "embeddings",
+        "meaning_lo": 0.3,
+        "meaning_hi": 0.53
+    },
+    "embeddings": {"base_url": "http://127.0.0.1:11434/v1", "model": "embeddinggemma", "api_key": ""},
+    "llm": {"base_url": "http://127.0.0.1:11434/v1", "model": "gemma4:12b-it-qat", "api_key": "", "batch": 20, "per_day": 100,
+            "reasoning_effort": "none"},
+    "free": {"seen": 1, "rate": 0.8},
+    "auto_reorder": true,
+    "crowd_name": "",
+    "sentry_dsn": ""
+}

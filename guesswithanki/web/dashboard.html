@@ -1,0 +1,82 @@
+<!doctype html>
+<html><head><!--GP_HEAD--><title>GuessWithAnki</title>
+<style>
+:root{--bg:#fbfaf7;--card:#ffffff;--ink:#1f2328;--mute:#6b7280;--line:#e6e3dc;--a:#2f6f5e;--a2:#c9a227;--warn:#a1462b;--chip:#eef4f1}
+@media (prefers-color-scheme:dark){:root:not(.light){--bg:#1d1f21;--card:#26292c;--ink:#e8e6e1;--mute:#9aa0a6;--line:#383c40;--a:#6cc2a6;--a2:#e0c25a;--warn:#e08a6c;--chip:#2c3833}}
+body.night_mode,body.nightMode{--bg:#1d1f21;--card:#26292c;--ink:#e8e6e1;--mute:#9aa0a6;--line:#383c40;--a:#6cc2a6;--a2:#e0c25a;--warn:#e08a6c;--chip:#2c3833}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI","Hiragino Sans","Noto Sans JP",sans-serif}
+main{max-width:1060px;margin:0 auto;padding:18px 16px 40px}
+h1{font-size:20px;margin:0 0 2px}h2{font-size:15px;margin:26px 0 8px}
+.sub{color:var(--mute);font-size:12.5px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:14px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tile .k{color:var(--mute);font-size:12px}.tile .v{font-size:26px;font-weight:650;margin-top:2px}
+.tile .v small{display:block;font-size:12.5px;color:var(--mute);font-weight:500;margin-top:2px}
+.arrow{color:var(--a)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{text-align:left;color:var(--mute);font-weight:550;font-size:12px;border-bottom:1px solid var(--line);padding:5px 8px}
+td{border-bottom:1px solid var(--line);padding:5px 8px;vertical-align:top}
+tr:last-child td{border-bottom:0}
+.jp{font-size:16px}.mute{color:var(--mute)}
+.chip{display:inline-block;background:var(--chip);border-radius:6px;padding:0 6px;margin:1px 3px 1px 0;font-size:12.5px;white-space:nowrap}
+.yes{color:var(--a);font-weight:600}.no{color:var(--mute)}
+.warn{border-color:var(--warn);color:var(--warn)}
+.bar{height:6px;border-radius:3px;background:var(--line);overflow:hidden;min-width:60px}.bar i{display:block;height:100%;background:var(--a)}
+svg text{fill:var(--mute);font-size:11px}
+.legend span{display:inline-block;margin-right:14px;font-size:12px;color:var(--mute)}
+.legend b{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:5px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:760px){.two{grid-template-columns:1fr}}
+</style></head>
+<body><main id="app"></main>
+<script>
+const D=/*GP_DATA*/null;
+const $=s=>document.querySelector(s), esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const pct=(a,b)=>b?Math.round(100*a/b)+'%':'–';
+function chart(){
+  const e=D.effect, W=640,H=190,P=34, n=e.n||1, mx=Math.max(1,...e.after_curve.map(p=>p[1]),...e.before_curve.map(p=>p[1]));
+  const x=i=>P+(W-P-10)*i/n, y=v=>H-22-(H-34)*v/mx;
+  const line=(c,col)=>'<polyline fill="none" stroke="'+col+'" stroke-width="2.4" points="'+[[0,0],...c].map(p=>x(p[0])+','+y(p[1])).join(' ')+'"/>';
+  let g='';for(let k=0;k<=4;k++){const v=Math.round(mx*k/4);g+='<line x1="'+P+'" x2="'+(W-10)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--line)"/><text x="'+(P-6)+'" y="'+(y(v)+4)+'" text-anchor="end">'+v+'</text>'}
+  for(let k=0;k<=4;k++){const i=Math.round(n*k/4);g+='<text x="'+x(i)+'" y="'+(H-6)+'" text-anchor="middle">'+i+'</text>'}
+  return '<svg viewBox="0 0 '+W+' '+H+'" width="100%" role="img" aria-label="guessable words on arrival, deck order vs path">'+g+line(e.before_curve,'var(--a2)')+line(e.after_curve,'var(--a)')+'</svg>'+
+    '<div class="legend"><span><b style="background:var(--a)"></b>GuessWithAnki order</span><span><b style="background:var(--a2)"></b>the deck\'s own order</span><span>x: new cards from now · y: guessable on arrival so far</span></div>';
+}
+function lvl(v){return v==null?'<span class="mute">–</span>':'<div class="bar" title="'+v+'"><i style="width:'+Math.round(v*100)+'%"></i></div>'}
+function render(){
+  if(!D){$('#app').innerHTML='<p>No plan yet: run Tools → GuessWithAnki → Reorder new cards.</p>';return}
+  const t=D.totals,g=D.guessable,e=D.effect;
+  let h='<h1>GuessWithAnki</h1><div class="sub">'+esc(D.settings.search)+' · planned '+esc(D.at||'')+(D.seconds!=null?' in '+D.seconds+' s':'')+(D.moved!=null?' · '+D.moved+' cards moved':'')+'</div>';
+  for(const w of D.warnings||[])h+='<div class="panel warn" style="margin-top:10px">Deck options: '+esc(w)+' (set new card gather order to "Deck" or "Ascending position", and sort order to "Order gathered" or "Card type, then order gathered")</div>';
+  if(D.note)h+='<div class="panel warn" style="margin-top:10px">'+esc(D.note)+'</div>';
+  h+='<div class="tiles">'+
+   '<div class="tile"><div class="k">Guessable on arrival, next '+e.n+' new cards</div><div class="v">'+e.before+' <span class="arrow">→</span> '+e.after+' <small>deck order → path</small></div></div>'+
+   '<div class="tile"><div class="k">New words judged guessable (reading and meaning)</div><div class="v">'+g.both+' <small>of '+g.new_kanji+' with kanji · '+pct(g.both,g.new_kanji)+'</small></div></div>'+
+   '<div class="tile"><div class="k">Of the deck\'s own next '+e.n+', still in the path\'s next '+e.n+'</div><div class="v">'+(e.kept??'–')+' <small>the rest come later; the path brings guessable words forward</small></div></div>'+
+   '<div class="tile"><div class="k">Reading guessable · meaning guessable</div><div class="v">'+g.reading+' · '+g.meaning+' <small>new words</small></div></div>'+
+   '<div class="tile"><div class="k">Judged by</div><div class="v" style="font-size:15px;line-height:1.7">'+['crowd','deck','llm','heuristic'].map(s=>'<span class="chip">'+s+' '+(D.labels[s]||0)+'</span>').join('')+'</div></div>'+
+  '</div>';
+  if(D.free){const f=D.free;
+   h+='<h2>Free cards</h2><div class="tiles">'+
+    '<div class="tile"><div class="k">Cards studied</div><div class="v">'+f.studied+'<small>'+f.arrived_free+' of them arrived guessable (free): about '+f.effort+' needed real learning</small></div></div>'+
+    '<div class="tile"><div class="k">Words you could guess now, not studied yet</div><div class="v">'+f.guessable_now+'<small>from '+f.patterns+' kanji readings you have learned</small></div></div>'+
+    '<div class="tile"><div class="k">Virtual cards (studied + guessable × '+f.rate+')</div><div class="v">'+f.virtual+'<small>'+(f.studied?(f.virtual/f.studied).toFixed(1)+'× what you studied':'study a few cards first')+' · a reading counts as learned after '+f.seen+' sighting'+(f.seen==1?'':'s')+'</small></div></div>'+
+   '</div>';}
+  h+='<h2>Words guessable on arrival</h2><div class="panel">'+chart()+'</div>';
+  h+='<h2>Next new cards</h2><div class="panel"><table><tr><th>#</th><th>word</th><th>meaning</th><th>reading · meaning</th><th>why here</th></tr>'+
+   D.next.map(r=>'<tr><td class="mute">'+r.i+'</td><td><span class="jp">'+esc(r.word)+'</span><br><span class="mute">'+esc(r.reading)+'</span></td><td>'+esc(r.meaning)+'</td><td>'+lvl(r.r)+'<div style="height:4px"></div>'+lvl(r.m)+'</td><td>'+
+     (r.guessable?'<span class="yes">guessable</span> ':'')+r.fresh.map(f=>'<span class="chip">'+esc(f[0])+' · '+f[1]+' ago</span>').join('')+r.spaced.map(p=>'<span class="chip">'+esc(p)+' · spaced</span>').join('')+
+     (r.setup>0?' <span class="mute">opens '+r.setup+' word'+(r.setup==1?'':'s')+'</span>':'')+(!r.guessable&&!r.setup?'<span class="no">deck order</span>':'')+'</td></tr>').join('')+'</table></div>';
+  h+='<div class="two"><div><h2>Patterns (kanji · reading)</h2><div class="panel"><table><tr><th>pattern</th><th>words</th><th>met</th><th>status</th><th>next in</th></tr>'+
+   D.patterns.map(p=>'<tr><td class="jp">'+esc(p.p)+'</td><td>'+p.words+'</td><td>'+p.seen+'</td><td>'+esc(p.status)+(p.gap?' <span class="mute">gap '+p.gap+'</span>':'')+'</td><td>'+(p.next==null?'–':p.next+1)+'</td></tr>').join('')+'</table></div></div>'+
+   '<div><h2>Could be confused ('+D.confusable_total+')</h2><div class="panel"><table><tr><th>word</th><th>kanji read here</th><th>also read</th></tr>'+
+   D.confusable.map(c=>'<tr><td><span class="jp">'+esc(c.word)+'</span><br><span class="mute">'+esc(c.reading)+'</span></td><td><span class="jp">'+esc(c.kanji)+'</span> '+esc(c.here)+' <span class="mute">'+Math.round(c.here_dict*100)+'% of words</span></td><td>'+
+     c.others.map(o=>'<span class="chip">'+esc(o.r)+' '+Math.round(o.dict*100)+'%'+(o.deck?' · '+o.deck+' here':'')+'</span>'+(o.examples.length?'<span class="mute">'+esc(o.examples.join('、'))+'</span> ':'')).join('<br>')+'</td></tr>').join('')+'</table></div></div></div>';
+  h+='<h2>Deck</h2><div class="panel sub">'+t.words+' words: '+t.kanji+' with kanji ('+t.split+' read kanji by kanji, '+t.irregular+' read as a whole), '+t.kana+' kana only · '+t.started+' studied, '+t.new+' new · window '+D.settings.window+' · planned ahead '+D.settings.ahead+' · pattern spacing '+(D.settings.spacing?'on':'off')+
+   ' · guessable at reading ≥ '+D.settings.thresholds.reading+', meaning ≥ '+D.settings.thresholds.meaning+'</div>';
+  $('#app').innerHTML=h;
+}
+render();
+</script></body></html>
