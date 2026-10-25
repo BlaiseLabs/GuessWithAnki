@@ -131,7 +131,7 @@ class Beats(Scene):
         if rest > 0.02:
             self.wait(rest)
 
-    def tearDown(self):
+    def tear_down(self):
         out = HERE / "build"
         out.mkdir(exist_ok=True)
         (out / ("starts_%s.json" % type(self).__name__)).write_text(

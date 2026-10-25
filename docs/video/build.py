@@ -92,15 +92,15 @@ def main():
     B.mkdir(exist_ok=True)
     texts = {sid: text for sec, sid, text, say in segments()}
     videos = {}
-    if not a.no_render:
+    if not a.no_render and a.scenes:
         with ThreadPoolExecutor(a.jobs) as ex:
             for scene, rc, mp4 in ex.map(lambda s: render(s, a.quality), a.scenes):
                 print(scene, "rendered" if rc == 0 else "FAILED (see build/render_%s.log)" % scene, flush=True)
                 if rc != 0:
                     sys.exit(1)
                 videos[scene] = mp4
-    else:
-        for s in SCENES:
+    for s in SCENES:                                   # (scenes not rendered this time: the last render)
+        if s not in videos:
             found = sorted((B / ("media_%s" % s)).glob("videos/video/*/%s.mp4" % s), key=lambda p: p.stat().st_mtime)
             videos[s] = found[-1]
     # one voice track per scene, each clip at its beat's recorded start
