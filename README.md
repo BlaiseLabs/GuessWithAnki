@@ -1,106 +1,176 @@
 # GuessWithAnki
 
-**Japanese vocabulary ordered so you can guess the meaning and reading of each word from kanji you've already met.**
+**Any vocabulary deck, ordered so you can guess each new word from pieces you've already met.**
 
-![How GuessWithAnki works: a word arrives right after its kanji, so you can guess it](docs/explainer.gif)
-
-An Anki add-on that orders a Japanese deck's new cards so that each word arrives **guessable**: its kanji, read the
-way they are read in that word, came up in cards you just studied, and its meaning follows from what those kanji mean.
-You stop memorizing a share of your words and start guessing them right on first sight.
+The sequel to [GuessWithKanji](https://github.com/BlaiseLabs/GuessWithKanji). GuessWithKanji orders a Japanese deck so
+each word arrives right after the kanji it is built from, read the way the word reads them, so you can guess it on
+first sight instead of memorizing it. GuessWithAnki asks whether that works beyond Japanese. The same approach covers
+four kinds of deck: Japanese, Chinese, English for learners, and medical terminology.
 
 ```
-電車 でんしゃ  train      (studied)
-天気 てんき    weather    (studied)
-電気 でんき    ?          電 read でん, met 2 cards ago; 気 read き, met 1 card ago;
-                          electric + spirit -> electricity: guessable, so it comes next
+Japanese  電車 でんしゃ, 天気 てんき (studied)  ->  電気 でんき   電 read でん + 気 read き: electric + spirit = electricity
+Chinese   开 kāi, 大学生 dàxuéshēng (studied)  ->  开学 kāixué   open + study = the start of term
+English   unemployment (studied)              ->  employer       employ + -er: one who employs
+Medical   acr- (extremity), phob- (fear)       ->  acrophobia     fear of heights (of the extremes)
 ```
 
-## How much faster
+![How it works on a Japanese deck: a word arrives right after its kanji, so you can guess it](docs/explainer.gif)
 
-A card you guess right the first time you see it is a free card: you never have to learn it. The table counts only the
-cards you have to learn, and asks how many it takes to reach a number of words, in the deck's own order (normal Anki)
-and in GuessWithAnki's order. Speed-up is normal Anki's cards divided by GuessWithAnki's: 75% fewer cards is 4× faster, since
-each card you learn gets you four words instead of one. The guess rate is how often you get a guessable word right
-once its kanji readings are learned.
+## Does it work across languages?
 
-Speed-up (cards learned: normal Anki → GuessWithAnki), Anki's default FSRS at 90% retention, a kanji reading learned after
-one sighting:
+Yes for Chinese and Japanese, partly for English, and only with a roots deck for medicine. Eight decks, two per
+community, picked from what each community recommends to beginners on Reddit (see [The decks](#the-decks)).
 
-| Deck | Guess rate | 100 words | 500 words | 1,000 words | 2,000 words |
+**How much of each deck is guessable.** A word is guessable when its pieces' meanings (and, for Japanese and Chinese,
+their usual readings) give away the word. Pieces reused = the share of words whose every piece appears in another
+word of the deck too. On arrival = guessable words that arrive with all their pieces already met, in the first 500
+cards.
+
+| Deck | Kind | Words | With pieces | Meaning guessable | Reading guessable | Guessable | Pieces reused | Guessable on arrival in the first 500 (deck order → GuessWithAnki) |
+|---|---|---|---|---|---|---|---|---|
+| Kaishi 1.5k | Japanese | 1,500 | 86% | 77% | 96% | **64%** | 45% | 7 → **270** |
+| Core 2k | Japanese | 2,000 | 80% | 78% | 95% | **60%** | 55% | 2 → **295** |
+| New HSK 3.0, levels 1–4 | Chinese | 3,245 | 100% | 74% | 96% | **71%** | 90% | 31 → **373** |
+| HSK (2012), levels 1–5 | Chinese | 2,495 | 100% | 68% | 97% | **66%** | 64% | 7 → **308** |
+| 4000 Essential English Words | English | 3,596 | 42% | 49% | – | **20%** | 43% | 1 → **175** |
+| Oxford 3000 | English | 3,377 | 41% | 66% | – | **27%** | 47% | 0 → **241** |
+| Medical Terminology with Etymology | medical | 512 | 47% | 58% | – | **27%** | 29% | 14 → **31** |
+| Hippocrates Code roots, then those terms | medical | 1,494 | 76% | 17% | – | **13%** | 33% | 2 → **83** |
+
+**How much faster.** A card you guess right the first time you see it is a free card: you never have to learn it.
+The table counts the cards you have to learn to reach a number of words, in the deck's own order (normal Anki) and in
+GuessWithAnki's. Speed-up = normal Anki's cards / GuessWithAnki's. The guess rate is how often you get a guessable word
+right once its pieces are learned (rows for 50%, 33% and 25% are in `docs/results.md`).
+
+| Deck | Guess rate | 100 words | 250 words | 500 words | 1,000 words |
 |---|---|---|---|---|---|
-| JLPT N5–N1 vocabulary (7,727 words) | 100% | **6.2×** (100 → 16) | **4.6×** (470 → 102) | **4.1×** (903 → 221) | **3.2×** (1,610 → 511) |
-|  | 80% | **2.9×** (100 → 35) | **2.6×** (478 → 185) | **2.4×** (926 → 385) | **2.1×** (1,691 → 816) |
-|  | 50% | **1.8×** (100 → 56) | **1.6×** (484 → 302) | **1.6×** (951 → 609) | **1.4×** (1,807 → 1,247) |
-|  | 33% | **1.4×** (100 → 70) | **1.3×** (492 → 365) | **1.3×** (971 → 741) | **1.2×** (1,873 → 1,508) |
-|  | 25% | **1.3×** (100 → 78) | **1.2×** (492 → 399) | **1.2×** (974 → 801) | **1.2×** (1,890 → 1,620) |
-| Core 6k Optimized (5,999) | 100% | **5.4×** (98 → 18) | **4.1×** (450 → 110) | **3.8×** (859 → 225) | **2.8×** (1,560 → 560) |
-|  | 80% | **2.7×** (98 → 36) | **2.4×** (460 → 188) | **2.3×** (884 → 383) | **1.9×** (1,643 → 852) |
-|  | 50% | **1.7×** (99 → 58) | **1.5×** (475 → 308) | **1.5×** (926 → 606) | **1.4×** (1,777 → 1,278) |
-|  | 33% | **1.4×** (99 → 72) | **1.3×** (484 → 370) | **1.3×** (954 → 742) | **1.2×** (1,861 → 1,520) |
-|  | 25% | **1.3×** (99 → 75) | **1.2×** (490 → 398) | **1.2×** (966 → 802) | **1.1×** (1,886 → 1,641) |
-| Core 2k (2,000) | 100% | **3.7×** (99 → 27) | **2.4×** (472 → 199) | **1.6×** (867 → 530) | **1.0×** (1,575 → 1,517) |
-|  | 80% | **2.3×** (100 → 44) | **1.8×** (480 → 264) | **1.4×** (900 → 628) | **1.0×** (1,672 → 1,617) |
-|  | 50% | **1.7×** (100 → 60) | **1.4×** (488 → 342) | **1.2×** (939 → 756) | **1.0×** (1,793 → 1,751) |
-|  | 33% | **1.3×** (100 → 76) | **1.2×** (492 → 403) | **1.1×** (961 → 847) | **1.0×** (1,866 → 1,842) |
-|  | 25% | **1.3×** (100 → 79) | **1.2×** (493 → 425) | **1.1×** (967 → 874) | **1.0×** (1,893 → 1,870) |
-| Kaishi 1.5k (1,500) | 100% | **3.5×** (97 → 28) | **2.2×** (456 → 209) | **1.3×** (870 → 694) | – |
-|  | 80% | **2.4×** (98 → 41) | **1.8×** (466 → 265) | **1.2×** (898 → 751) | – |
-|  | 50% | **1.6×** (98 → 60) | **1.4×** (481 → 350) | **1.1×** (940 → 841) | – |
-|  | 33% | **1.3×** (99 → 76) | **1.2×** (486 → 402) | **1.1×** (956 → 898) | – |
-|  | 25% | **1.2×** (99 → 81) | **1.1×** (492 → 433) | **1.0×** (970 → 929) | – |
-| Tango N5, AnkiWeb (1,160) | 100% | **2.4×** (96 → 40) | **1.3×** (475 → 354) | **1.1×** (906 → 845) | – |
-|  | 80% | **1.9×** (97 → 50) | **1.3×** (479 → 382) | **1.1×** (922 → 873) | – |
-|  | 50% | **1.4×** (98 → 70) | **1.1×** (489 → 431) | **1.0×** (951 → 927) | – |
-|  | 33% | **1.2×** (99 → 81) | **1.1×** (494 → 454) | **1.0×** (971 → 950) | – |
-|  | 25% | **1.2×** (99 → 86) | **1.1×** (495 → 465) | **1.0×** (973 → 963) | – |
+| Kaishi 1.5k | 100% | **3.3×** (97 → 29) | **2.6×** (240 → 93) | **2.0×** (464 → 230) | **1.2×** (890 → 723) |
+|  | 80% | **2.4×** (98 → 42) | **2.0×** (242 → 124) | **1.7×** (474 → 282) | **1.2×** (917 → 776) |
+| Core 2k | 100% | **3.6×** (100 → 28) | **2.8×** (242 → 87) | **2.3×** (476 → 204) | **1.6×** (898 → 574) |
+|  | 80% | **2.3×** (100 → 44) | **2.0×** (244 → 120) | **1.8×** (481 → 265) | **1.4×** (918 → 660) |
+| New HSK 3.0, levels 1–4 | 100% | **4.1×** (95 → 23) | **3.6×** (216 → 60) | **2.8×** (359 → 126) | **2.5×** (697 → 280) |
+|  | 80% | **2.5×** (96 → 38) | **2.3×** (223 → 97) | **2.0×** (392 → 200) | **1.8×** (762 → 422) |
+| HSK (2012), levels 1–5 | 100% | **3.1×** (100 → 32) | **2.7×** (238 → 88) | **2.4×** (467 → 191) | **2.0×** (887 → 444) |
+|  | 80% | **2.2×** (100 → 46) | **2.0×** (240 → 122) | **1.8×** (473 → 256) | **1.6×** (910 → 557) |
+| 4000 Essential English Words | 100% | **2.1×** (100 → 48) | **1.9×** (249 → 133) | **1.5×** (493 → 321) | **1.2×** (978 → 784) |
+|  | 80% | **1.7×** (100 → 57) | **1.6×** (249 → 156) | **1.4×** (494 → 356) | **1.2×** (983 → 827) |
+| Oxford 3000 | 100% | **2.6×** (100 → 39) | **2.3×** (249 → 107) | **1.9×** (492 → 255) | **1.4×** (970 → 714) |
+|  | 80% | **2.1×** (100 → 48) | **1.9×** (250 → 134) | **1.6×** (494 → 303) | **1.3×** (976 → 769) |
+| Medical Terminology with Etymology | 100% | **1.4×** (97 → 70) | **1.1×** (241 → 219) | **1.0×** (478 → 468) | – |
+|  | 80% | **1.3×** (98 → 76) | **1.1×** (243 → 225) | **1.0×** (482 → 474) | – |
+| Hippocrates Code roots, then those terms | 100% | **1.7×** (100 → 59) | **1.5×** (250 → 168) | **1.2×** (486 → 416) | **1.1×** (979 → 916) |
+|  | 80% | **1.5×** (100 → 65) | **1.4×** (250 → 182) | **1.1×** (489 → 431) | **1.1×** (983 → 931) |
 
 What this shows:
 
-- **Big decks keep the lead.** JLPT and Core 6k reach 2,000 words with about half the cards learned at an 80% guess
-  rate, because their kanji repeat across thousands of words.
-- **Small decks front-load it.** Kaishi, Core 2k and Tango save the most in their first few hundred words; by the time
-  most of the deck is started, both orders have had the same chances to guess.
-- **Even a poor guesser gains.** At a 25% guess rate the first 500 words still take 6–19% fewer cards.
-- **Reviews come on top.** Free cards still come back for review. In the same simulation run for a year, the big decks
-  need 30% fewer card showings by 1,000 words started and 14–20% fewer by 4,000–6,000 (the saving comes early), and
-  forgotten reviews fall by about 70%.
+- **Chinese is the best case.** Every word is made of characters, a character has one usual reading, and the same
+  characters come back again and again: in New HSK 3.0 levels 1–4, 90% of words share every character with another
+  word. It keeps a 1.6–1.8× lead at 1,000 words at an 80% guess rate, where the Japanese decks are down to 1.2–1.4×.
+- **Japanese is close behind.** About 60% of a beginner deck is guessable; the gain is largest in the first few
+  hundred words.
+- **English works for a fifth to a quarter of a learner's deck.** The guessable words are derived forms: employ,
+  then employer, employment, unemployed; separate, then separately, separation. 1.7–2.1× for the first 100 words at
+  80%, fading to 1.2–1.3× by 1,000. English has no reading to guess, and most common English words do not split.
+- **A medical terminology deck alone gains little.** The one tested is small and mixed (abbreviations, drug names,
+  everyday words): 27% guessable, but few of its parts come back in a second term.
+- **With a roots deck, the path front-loads the medical terms.** Students are told to learn the Greek and Latin roots
+  first. Studied in that order (the roots deck's 982 cards, then the terms), the terms start on day 50 and the learner
+  has 61 free cards by day 90 (80% guess rate). GuessWithAnki brings in only the roots a word needs, right before it:
+  68 free cards by day 14, after 280 cards studied.
+- **Reviews come on top.** Free cards still come back for review, but they are rarely forgotten. By day 30 (600 words
+  started, 80% guess rate) the Japanese, Chinese and English decks need 15–24% fewer card showings, and forgotten
+  reviews fall by 28–62% (New HSK 3.0: 118 → 49). The medical decks: 1–8% fewer showings.
 
-How it was measured: each deck imported fresh (no prior knowledge), guessability from the built-in heuristics alone
-(reading frequency + EmbeddingGemma meaning similarity), then a learner simulated day by day for 100 days at 20 new
-cards a day under FSRS-6 (the same formulas as py-fsrs, checked to 15 decimal places), every review done, 4 simulated
-learners averaged. Every day a word is shown counts as a sighting of its kanji readings, and each reading has an FSRS
-memory of its own. GuessWithAnki's order was planned once at the start (the add-on plans again after every session). The
-decks are not part of this repository: Kaishi 1.5k from its GitHub release, the others from AnkiWeb. Tools:
-`tools/import_deck.py`, `tools/fsrs_sim.py`, `tools/free_cards.py`.
+How it was measured: each deck imported fresh (no prior knowledge); every word labelled by one model, gpt-5.6-terra
+(16,331 words, about 2.1M tokens; the add-on's heuristics off); then a learner simulated day by day for 100 days at 20
+new cards a day under FSRS-6 (Anki's default parameters, 90% retention), every review done, 4 simulated learners
+averaged. Every day a word is shown counts as a sighting of its pieces, each piece has an FSRS memory of its own, and a
+piece is learned after one sighting. GuessWithAnki's order was planned once at the start (the add-on plans again after
+every session). Tools: `tools/label_parallel.py`, `tools/guess_index.py`, `tools/fsrs_sim.py`,
+`tools/speedup_table.py`. The decks are not part of this repository.
+
+## The general approach
+
+The path planner, the labels, the dashboard and the simulation only see **pieces**. A word is a list of pieces; a
+piece is learned when you study a word that has it; a word is free when it is guessable and all its pieces are fresh.
+What a piece is depends on the deck, so each kind of deck gets a **profile** that splits its words into pieces:
+
+| Profile | A piece is | Split by | Guessable when | Data |
+|---|---|---|---|---|
+| japanese | a kanji with the reading it has in the word (会:かい) | the reading field, aligned to the kanji (with rendaku and small tsu) | meaning and reading follow from the pieces | KANJIDIC2, JMdict |
+| chinese | a character with its pinyin syllable and tone (电:dian4) | the pinyin field, split into as many syllables as the word has characters (tone marks, tone numbers, spaces or none) | meaning and pinyin follow | CC-CEDICT |
+| english | a prefix, root, suffix, or a word inside a compound (un-, employ, -ment) | the model, which gives each word's parts with their meanings; without one, a table of the parts it found in the decks above (longest match) | meaning follows | model labels |
+| medical | a Greek or Latin prefix, root or suffix (hepat, -itis); a card for a word part itself (`cardi/o`, `-itis`) teaches that part | as english; parts match across spellings (cardi/o, cardio and cardi are one root) | meaning follows | model labels |
+
+The profile is told from the deck's fields (kana means Japanese, hanzi without kana Chinese, Latin letters English,
+medical when the terms look medical); set `profile` to choose. The planner is the same greedy path as GuessWithKanji:
+it picks the next card that makes the most words guessable soon, and when nothing is guessable it brings in a plain
+word with one new piece.
+
+## The decks
+
+Picked from about 1,600 Reddit threads read through Reddit's API (438 for Chinese, 280 for English, 900 for medicine);
+a mention is a post or comment that names or links the deck. Full notes: [docs/deck_research.md](docs/deck_research.md).
+
+| Community | Deck | AnkiWeb | Used | Mentions |
+|---|---|---|---|---|
+| Chinese | Mandarin Chinese: New HSK 3.0 Vocabulary and Characters | `1144807196` | the word notes of levels 1–4 | 26 |
+| Chinese | Hanyu Shuiping Kaoshi (HSK) (all 5000 words) | `1855818143` | levels 1–5 | 3 (the 2012 HSK lists: 37 more) |
+| English | 4000 Essential English Words (all books) [en-en] | `413429709` | all | 22 |
+| English | [English] The Oxford 3000 Most Important Words | `1575087857` | all | about 7 (Oxford lists) |
+| medical | Medical Terminology & Abbreviations With Etymology | `1220822549` | all | 0 (the best text fit) |
+| medical | The Hippocrates Code: Medical Greek and Latin | `1645339321` | the 980 word-part cards, studied before the terms deck | 0 |
+| Japanese | Kaishi 1.5k, Core 2k (the GuessWithKanji decks) | | all | |
+
+Not testable: Spoonfed Chinese (183 mentions, the most recommended Chinese deck) has sentence cards with no word
+field; Refold Mandarin 1k is not on AnkiWeb; Mosby's Medical Terminology Flash Cards (the terminology deck Reddit
+names most) is scanned images; AnKing (2,038 mentions) is a deck of medical facts, not terms.
+
+## Limits
+
+- **English and medical are judged on meaning only.** Whether the spelling or pronunciation follows from the parts
+  is not judged.
+- **Parts are matched by spelling.** Two morphemes spelled alike count as one (the -min- of the Latin suffix -men and
+  the min of minor), and a model's split does not always use a roots deck's forms, so some terms stay unguessable
+  after their roots are studied.
+- **The labels come from one model.** For Japanese, GuessWithKanji measured Gemma 4 12B agreeing with a larger model
+  on 86% of readings and 79% of meanings; agreement was not measured for the new profiles.
+- **Guessable assumes a part's meaning carries over.** A learner who met -er in teacher may not read it as "one who"
+  in employer. The lower guess-rate rows show what is left when that often fails.
+- **Two decks come shuffled.** 4000 Essential English Words and Oxford 3000 come in a mixed order, so their deck-order
+  baseline is what you get with them in Anki, not an order by level.
+- **One word per card.** Sentence decks, image decks and fact decks are out of reach.
 
 ## What it does
 
-- **Reads your deck**: any note type with a word field. Fields are found by name and by what they hold (short
-  Japanese = word, kana = reading, English = meaning), so `Vocabulary-Kanji`, `Word Reading` or a word written with
-  furigana (`漢字[かんじ]`) all work; a reading field that holds a sentence is ignored. Your study history says which
-  kanji readings you have met and when.
-- **Splits each word into patterns**: kanji + the reading it has in that word (`談:だん` in 相談 and 面談), with the
-  regular sound changes (rendaku, small tsu). Checked against JmdictFurigana: the same split for 99.0% of 17,854
-  common words.
+- **Reads your deck**: any note type with a word field. Fields are found by name and by what they hold (a short
+  Japanese or Chinese word, kana or pinyin, an English meaning), so `Vocabulary-Kanji`, `Simplified` + `Pinyin`,
+  `Term` + `Definition` or a word written with furigana (`漢字[かんじ]`) all work; a reading field that holds a
+  sentence is ignored. Your study history says which pieces you have met and when.
+- **Splits each word into pieces** by its profile (above). Japanese: kanji + the reading it has in that word
+  (`談:だん` in 相談 and 面談), with the regular sound changes (rendaku, small tsu), checked against JmdictFurigana:
+  the same split for 99.0% of 17,854 common words. Chinese: character + pinyin syllable. English and medical: the
+  parts a model gives.
 - **Judges guessability** from several sources, weighted when they disagree:
-  - **heuristic** (code, tunable): how common the word's reading of each kanji is (dictionary and/or your deck), and
-    how close the word's meaning is to its kanji's meanings (embedding cosine, EmbeddingGemma by default, or plain
-    word overlap with no model). Tuned on 2,038 labelled words: AUC 0.83 for meaning with EmbeddingGemma (0.73 with
-    word overlap), 0.83 for reading;
+  - **heuristic** (code, tunable): how common the word's reading of each piece is (dictionary and/or your deck), and
+    how close the word's meaning is to its pieces' meanings (embedding cosine, EmbeddingGemma by default, or plain
+    word overlap with no model). Tuned for Japanese on 2,038 labelled words: AUC 0.83 for meaning with EmbeddingGemma
+    (0.73 with word overlap), 0.83 for reading;
   - **llm**: any model behind an OpenAI-style API (Gemma 4 through Ollama by default) labels words in batches, a daily
-    cap at a time (100 a day by default), resumable, with a JSON schema that names the batch's words. Gemma 4 12B
-    agreed with a larger cloud model's labels on 86% of readings and 79% of meanings over 1,839 words;
+    cap at a time (100 a day by default), resumable, with a JSON schema that names the batch's words. Each profile
+    has its own prompt; for English and medical the model also gives the word's parts. For a whole deck at once
+    with a cloud model, use `tools/label_parallel.py`;
   - **crowd and deck**: you (or a group) label words while reviewing (Shift+G or right-click), share labels as a
     file, or ship them inside a deck you publish.
 - **Plans the path**: a greedy order over your new cards that makes as many words as possible guessable on arrival.
-  When nothing is guessable yet it brings in an opener, one new kanji reading at a time and a plain word first
+  When nothing is guessable yet it brings in an opener, one new piece at a time and a plain word first
   (見る before 見っともない, 取る and 戻る before 取り戻す). It writes the order into Anki's new-card queue and plans
   again after each review session.
 - **Options**: `deck_every` keeps part of a deck's own order (every n-th card); `need` asks for several sightings
-  before a kanji reading counts; pattern spacing brings a learned reading back at growing gaps.
+  before a piece counts; pattern spacing brings a learned piece back at growing gaps.
 - **Dashboard**: free cards (cards studied, how many arrived guessable, words you could guess now), words guessable
-  on arrival (deck order vs path), the next cards and why, your patterns, and words whose kanji have another common
-  reading (could be confused).
+  on arrival (deck order vs path), the next cards and why, your pieces, and (Japanese, Chinese) words whose
+  characters have another common reading (could be confused).
 - **Sentry tracing** (optional): each labelling job is one trace in Sentry's AI agent format, a transaction per batch
   with its tokens, timing and unreadable words, plus a span per embedding call.
 
@@ -126,7 +196,8 @@ context.
 ## Settings
 
 Tools > GuessWithAnki > Settings (see `guesswithanki/config.md`). The ones that matter most: `search` (which notes),
-`path.window` (how many cards back a kanji still counts as fresh), `guessable` (the levels a word needs),
+`profile` (what kind of deck, `auto` by default), `path.window` (how many cards back a piece still counts as fresh),
+`guessable` (the levels a word needs),
 `sources` (how much crowd / model / heuristic labels weigh), `llm.per_day`, `free` (how the dashboard counts free
 cards), `sentry_dsn`.
 
@@ -159,6 +230,9 @@ python tools/import_deck.py deck.apkg out.anki2    # a shared deck into a collec
 python tools/deck_report.py out.anki2 --files dir # what the path changes for a new learner
 python tools/fsrs_sim.py out.anki2 --files dir --out sim.json   # the simulation behind the table above
 python tools/fsrs_sim.py out.anki2 --files dir --out sim.json --params my_fsrs.json --retention 0.85   # with your FSRS
+python tools/label_parallel.py out.anki2 --files dir --key-env OPENAI_API_KEY --threads 10   # a whole deck, cloud model
+python tools/guess_index.py "Name=out.anki2=dir[=cfg.json]" ...   # the guessability table above
+python tools/speedup_table.py "Name=sim.json" ...                 # the speed-up table above
 ```
 
 ## Development
@@ -167,6 +241,8 @@ python tools/fsrs_sim.py out.anki2 --files dir --out sim.json --params my_fsrs.j
 pip install aqt pytest
 bash tools/fetch_raw.sh             # KANJIDIC2, JMdict, JmdictFurigana into raw/ (EDRDG and Doublevil downloads)
 python tools/build_data.py          # rebuilds guesswithanki/data/ and tools/common_words.json
+python tools/build_hanzi.py         # hanzi.json, pinyin.json from CC-CEDICT (raw/cedict.txt.gz)
+python tools/build_morphemes.py english labels.jsonl ...   # the english/medical part tables from model labels
 python tools/make_demo.py demo.anki2 --n 2000 --study 150   # a demo deck from JMdict's common words
 python -m pytest -q                 # core + a real Anki collection
 GP_DEMO=demo.anki2 bash e2e/run.sh  # a real Anki under Xvfb, driven like a learner (menu, keyboard, dialogs)
@@ -178,9 +254,14 @@ manim -qh docs/video/explainer.py Explainer   # the explainer video (Manim Commu
 
 - KANJIDIC2 and JMdict, the Electronic Dictionary Research and Development Group (EDRDG), CC BY-SA 4.0: kanji
   meanings and readings, the dictionary reading counts, the demo deck. JmdictFurigana (Doublevil, CC BY-SA 4.0):
-  the check of the reading splitter. The derived files in `guesswithanki/data/` are shared under CC BY-SA 4.0.
+  the check of the reading splitter.
+- CC-CEDICT (MDBG, CC BY-SA 4.0): Chinese character meanings, pinyin and reading counts.
+- The English and medical part tables: parts and meanings a model (gpt-5.6-terra) gave while labelling the decks
+  measured above; no deck text. The derived files in `guesswithanki/data/` are shared under CC BY-SA 4.0.
 - FSRS, the open-spaced-repetition project: `tools/fsrs_sim.py` reimplements the FSRS-6 formulas of py-fsrs.
-- Gemma and EmbeddingGemma (Google) through Ollama for the model labels and meaning similarity.
+- Gemma and EmbeddingGemma (Google) through Ollama for the model labels and meaning similarity; gpt-5.6-terra
+  (OpenAI) for the labels behind the results.
+- GuessWithKanji, the blueprint.
 
 ## Licence
 

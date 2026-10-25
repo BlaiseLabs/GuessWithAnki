@@ -153,7 +153,8 @@ def parse(text, batch, model):
 def todo(items, store, model):
     """the items with kanji no label from this model covers yet, in study order (new cards' next first)"""
     have = {(r["word"], r.get("reading")) for r in store.records if r["source"] == "llm" and r.get("model") == model}
-    return [it for it in items if it.has_kanji and (it.word, it.reading) not in have]
+    affix = getattr(profile(), "is_affix", lambda w: False)          # (a card for a word part has nothing to judge)
+    return [it for it in items if it.has_kanji and not affix(it.word) and (it.word, it.reading) not in have]
 
 
 def run(items, store, cfg, limit=None, progress=None, tracer=None, cancelled=lambda: False):

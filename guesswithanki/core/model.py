@@ -45,10 +45,14 @@ class Item:
     def pieces(self):
         return ["%s:%s" % p if p[1] else p[0] for p in self.split or []]
 
-    def set_parts(self, parts):
-        """(english, medical) the word's parts [(part, meaning)], from a label or the morpheme table"""
-        parts = [(str(a).strip().lower(), str(b).strip()) for a, b in parts or [] if str(a).strip()]
-        if len(parts) >= 2:
+    def set_parts(self, parts, least=2):
+        """(english, medical) the word's parts [(part, meaning)], from a label or the morpheme table (an affix card's
+        own forms: least=1); parts are matched across words by the profile's canonical form"""
+        p = profile()
+        canon = getattr(p, "canon", lambda x: x.lower())
+        parts = [(canon(str(a).strip()), str(b).strip()) for a, b in parts or [] if canon(str(a).strip())]
+        parts = list(dict(parts).items())
+        if len(parts) >= least:
             self.split = [(a, "") for a, _ in parts]
             self.parts = dict(parts)
 
@@ -60,12 +64,14 @@ def judge(items, store, heur, cfg, deck=None):
     latest = store.latest() if store else {}
     p = profile()
     for it in items:
+        if it.has_kanji and it.split is None and hasattr(p, "is_affix") and p.is_affix(it.word):
+            it.set_parts([(a, it.meaning) for a in p.affix_parts(it.word)], least=1)    # (a card for parts itself)
         if it.has_kanji and it.split is None and hasattr(p, "segment"):     # (english, medical: parts a model gave,
             got = [r.get("pieces") for src in ("crowd", "deck", "llm") for r in (latest.get(it.key, {}).get(src) or [])
-                   if r.get("pieces")]                                      #  else the morpheme table)
-            if deck and it.key in deck:
-                got = [r.get("pieces") for r in deck[it.key] if r.get("pieces")] + got
-            it.set_parts(got[0] if got else p.segment(it.word))
+                   if "pieces" in r]                                        #  else the morpheme table; a label that
+            if deck and it.key in deck:                                     #  found no parts keeps the word whole)
+                got = [r.get("pieces") for r in deck[it.key] if "pieces" in r] + got
+            it.set_parts(next((g for g in got if g), None) if got else p.segment(it.word))
         per = dict(latest.get(it.key, {}))
         if deck and it.key in deck:
             per["deck"] = deck[it.key]

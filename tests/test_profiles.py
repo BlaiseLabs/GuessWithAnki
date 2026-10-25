@@ -73,3 +73,25 @@ def test_the_path_works_on_word_parts():
     assert order[-1].word == "unkindness" or count_guessable([], order, full, {"window": 40}) == 1
     assert count_guessable([], order, full, {"window": 40}) == 1    # (it arrives after un-, kind and -ness)
     model.set_profile("japanese")
+
+
+def test_affix_cards_teach_their_parts():
+    med = profiles.get("medical")
+    for w in ("ante-", "-itis", "ben(e)-", "cardi/o", "ced-, cess-, -cede", "in- (il-, im-, ir-, etc.) (1)"):
+        assert med.is_affix(w) and med.accept(w), w
+    for w in ("Latin", "x-ray", "hepatitis", "latior, latius", "V/A"):
+        assert not med.is_affix(w), w
+    assert med.affix_parts("ced-, cess-, -cede") == ["ced-", "cess-", "-cede"]
+    assert med.affix_parts("ben(e)-") == ["ben(e)-"] and med.affix_parts("-ped(e)") == ["-ped(e)"] and med.affix_parts("ab- (a-, abs-)") == ["ab-", "a-", "abs-"]
+    assert med.canon("cardi/o") == med.canon("cardio") == med.canon("cardi") == "card"
+    assert med.canon("ben(e)-") == med.canon("bene-") == "ben" and med.canon("-itis") == "-itis"
+    assert med.canon("-or") != med.canon("or-")
+    model.set_profile("medical")
+    card = model.Item(nid=1, word="cortic-, cortico-, cort-", reading="", meaning="bark, outer layer")
+    model.judge([card], None, {}, {"sources": {}})
+    assert card.pieces == ["cortic", "cort"] and not model.guessable(card, {"guessable": {"meaning": 0.6}})
+    word = model.Item(nid=2, word="hepatitis", reading="", meaning="")
+    word.set_parts([("hepat/o", "liver"), ("-itis", "inflammation")])
+    assert word.pieces == ["hepat", "-itis"]
+    assert llm.todo([card, word], type("S", (), {"records": []})(), "m") == [word]
+    model.set_profile("japanese")

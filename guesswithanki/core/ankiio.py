@@ -5,9 +5,9 @@ from .model import Item
 
 GUESS = {
     "word": ["expression", "word", "vocab", "vocabulary", "vocab-kanji", "vocabkanji", "vocabulary-kanji", "kanji",
-             "japanese", "term", "単語", "front"],
+             "japanese", "term", "単語", "front", "simplified", "hanzi", "chinese", "汉字"],
     "reading": ["reading", "kana", "vocab-kana", "vocabkana", "vocabulary-kana", "hiragana", "furigana",
-                "vocab-furigana", "vocabfurigana", "vocabulary-furigana", "word reading", "読み", "yomi"],
+                "vocab-furigana", "vocabfurigana", "vocabulary-furigana", "word reading", "読み", "yomi", "pinyin"],
     "meaning": ["meaning", "english", "vocab-english", "vocabenglish", "vocabulary-english", "vocab-meaning",
                 "vocabmeaning", "definition", "english definition", "word meaning", "glossary", "gloss", "meanings",
                 "意味", "back"],
@@ -16,7 +16,8 @@ HINT = {"word": ("word", "vocab", "expression", "kanji", "term", "front", "単�
         "reading": ("reading", "kana", "furigana", "hiragana", "yomi", "読み"),
         "meaning": ("meaning", "english", "definition", "gloss", "translation", "back", "意味")}
 NOT = ("sentence", "example", "audio", "sound", "image", "picture", "pitch", "frequency", "freq", "index", "pos",
-       "grammar", "caution", "cloze", "additional", "note", "tag", "context", "mnemonic", "story")
+       "grammar", "caution", "cloze", "additional", "note", "tag", "context", "mnemonic", "story", "same", "similar",
+       "synonym", "related", "connected", "usage", "taiwan")
 
 
 def _content(role, vals):

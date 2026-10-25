@@ -1,7 +1,8 @@
 """A shared deck (.apkg) into a fresh collection of its own, with no study history, and a look at its note types:
-the fields GuessWithAnki would pick, and a sample note.
+the fields GuessWithAnki would pick, and a sample note. Several decks go into one collection in the order given (each
+one's new cards after the last one's: a study plan of one deck, then the next).
 
-    python3 tools/import_deck.py DECK.apkg OUT.anki2 [--show 2]"""
+    python3 tools/import_deck.py DECK.apkg [DECK2.apkg ...] OUT.anki2 [--show 2]"""
 import argparse
 import sys
 from pathlib import Path
@@ -15,16 +16,24 @@ from guesswithanki.core.profiles import detect_profile  # noqa: E402
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("apkg")
-    ap.add_argument("out")
+    ap.add_argument("paths", nargs="+", help="DECK.apkg ... OUT.anki2")
     ap.add_argument("--show", type=int, default=2)
     a = ap.parse_args()
+    a.apkgs, a.out = a.paths[:-1], a.paths[-1]
     from anki.collection import Collection
     from anki.import_export_pb2 import ImportAnkiPackageOptions, ImportAnkiPackageRequest
     Path(a.out).unlink(missing_ok=True)
     col = Collection(a.out)
-    col.import_anki_package(ImportAnkiPackageRequest(package_path=str(Path(a.apkg).resolve()),
-                                                     options=ImportAnkiPackageOptions(with_scheduling=False)))
+    for apkg in a.apkgs:
+        top = col.db.scalar("select max(due) from cards where type = 0") or 0
+        before = set(col.db.list("select id from cards"))
+        col.import_anki_package(ImportAnkiPackageRequest(package_path=str(Path(apkg).resolve()),
+                                                         options=ImportAnkiPackageOptions(with_scheduling=False)))
+        lo = col.db.scalar("select min(due) from cards where type = 0 and id not in (%s)" % ",".join(map(str, before))) \
+            if before else None
+        if before and lo is not None and lo <= top:      # (after the decks before it)
+            col.db.execute("update cards set due = due + ? where type = 0 and id not in (%s)" % ",".join(map(str, before)),
+                           top - lo + 1)
     print("%s: %d notes, %d cards" % (a.out, col.note_count(), col.card_count()))
     for nt in col.models.all():
         n = col.db.scalar("select count() from notes where mid = ?", nt["id"])

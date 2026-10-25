@@ -8,7 +8,10 @@
   pieces         distinct pieces; reuse = the share of words whose every piece appears in another word too
   on arrival     guessable words that arrive guessable in the next `n` words: deck order -> GuessWithAnki's path
 
-    python3 tools/guess_index.py "Name=COLLECTION.anki2=FILES_DIR" ... [--config cfg.json] [--n 500] [--json out.json]"""
+    python3 tools/guess_index.py "Name=COLLECTION.anki2=FILES_DIR[=cfg.json]" ... [--config cfg.json] [--n 500]
+                                 [--json out.json]
+
+(a deck's own cfg.json, merged over --config: its search, profile or fields)"""
 import argparse
 import collections
 import json
@@ -52,18 +55,19 @@ def pct(a, b):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("decks", nargs="+", help='"Name=COLLECTION.anki2=FILES_DIR"')
+    ap.add_argument("decks", nargs="+", help='"Name=COLLECTION.anki2=FILES_DIR[=cfg.json]"')
     ap.add_argument("--config")
     ap.add_argument("--n", type=int, default=500)
     ap.add_argument("--json")
     a = ap.parse_args()
-    cfg = run.merged(json.loads(Path(a.config).read_text(encoding="utf-8")) if a.config else {})
+    base = json.loads(Path(a.config).read_text(encoding="utf-8")) if a.config else {}
     out = {}
     print("| Deck | Kind | Words | With pieces | Meaning guessable | Reading guessable | Guessable | Pieces reused | "
           "Guessable on arrival in the first %d (deck order → path) |" % a.n)
     print("|---|---|---|---|---|---|---|---|---|")
     for spec in a.decks:
-        name, colpath, files = spec.split("=", 2)
+        name, colpath, files, *own = spec.split("=")
+        cfg = run.merged(dict(base, **(json.loads(Path(own[0]).read_text(encoding="utf-8")) if own else {})))
         r = index(colpath, files, cfg, a.n)
         out[name] = r
         w = r["with_pieces"]

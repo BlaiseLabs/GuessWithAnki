@@ -22,6 +22,7 @@ from . import kana
 DATA = Path(__file__).resolve().parents[1] / "data"
 HAN = re.compile("[㐀-䶿一-鿿豈-﫿]")
 LATIN = re.compile(r"^[A-Za-z][A-Za-z\-' ]*[A-Za-z]$|^[A-Za-z]$")
+AFFIX = re.compile(r"^-?[A-Za-z]+(?:\([A-Za-z]+\)[A-Za-z]*)?(?:/[A-Za-z]+)?-?$")    # ante-, -itis, ben(e)-, cardi/o
 
 
 @lru_cache(maxsize=None)
@@ -219,10 +220,38 @@ class Latin(Profile):
     table = ""
 
     def accept(self, word):
-        return 0 < len(word) <= 40 and bool(LATIN.match(word)) and len(word.split()) <= 3
+        return 0 < len(word) <= 40 and (bool(LATIN.match(word)) and len(word.split()) <= 3 or self.is_affix(word))
 
     def has_units(self, word):
         return self.accept(word)
+
+    def is_affix(self, word):
+        """a card for a word part itself (ante-, -itis, cardi/o; alternatives after a comma: 'ced-, cess-, -cede'):
+        it teaches its parts, and is no word to guess"""
+        first = re.split(r"[,;]\s*|\s+\(", word)[0].strip()
+        return bool(AFFIX.match(first)) and any(c in first for c in "-/(") and not first.isupper()
+
+    def affix_parts(self, word):
+        """an affix card's forms: 'ced-, cess-, -cede' -> ['ced-', 'cess-', '-cede']"""
+        out = []
+        for a in re.split(r"[,;]\s*|\s+\(", word):
+            a = a.strip()
+            a = a.rstrip(")") if a.count(")") > a.count("(") else a.lstrip("(") if a.count("(") > a.count(")") else a
+            if a and a != "etc." and AFFIX.match(a):
+                out.append(a)
+        return out
+
+    def canon(self, part):
+        """the form a part is matched by across words: lower case, no optional letters (ben(e)- -> ben), a suffix
+        keeps its hyphen (-or, an ending, is not or-, the mouth); prefixes and roots lose theirs (decks write roots
+        both ways: cerebr-, cerebr)"""
+        suffix = part.strip().startswith("-")
+        core = re.sub(r"[^a-z]", "", re.sub(r"\([a-z]*\)|/[a-z]*", "", part.lower()))
+        core = self._core(core)
+        return ("-" + core) if suffix and core else core
+
+    def _core(self, core):
+        return core
 
     def _table(self):
         return _json(self.table)
@@ -261,7 +290,9 @@ class Latin(Profile):
         return [m] if m else []
 
     def word_reading(self, word_raw, reading_raw):
-        w = kana.clean(word_raw)
+        w = re.sub(r"\s+", " ", kana.clean(word_raw)).strip()
+        if self.is_affix(w):
+            return w, ""
         w = re.split(r"[(\[;,/]", w)[0].strip()
         return w, ""
 
@@ -280,6 +311,12 @@ class English(Latin):
 
 class Medical(Latin):
     name, table = "medical", "morphemes_medical.json"
+
+    def _core(self, core):
+        """and no linking vowel at the end (cardi/o, cardio, cardi -> card; hepat(o)-, hepato -> hepat)"""
+        while len(core) > 3 and core[-1] in "aeiou":
+            core = core[:-1]
+        return core
 
 
 PROFILES = {p.name: p for p in (Japanese(), Chinese(), English(), Medical())}
