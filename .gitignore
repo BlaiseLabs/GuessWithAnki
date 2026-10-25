@@ -4,3 +4,4 @@ raw/
 work/
 build/
 .pytest_cache/
+docs/video/build/
