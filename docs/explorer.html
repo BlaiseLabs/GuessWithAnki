@@ -1,0 +1,55 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GuessWithAnki: how much faster, by language</title>
+<style>
+body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;background:#f7f6f2;color:#1d1d1b;margin:0;padding:24px;max-width:960px;margin:auto}
+h1{font-size:22px;margin:0 0 4px}.sub{color:#666;font-size:14px;margin-bottom:18px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}.lab{font-size:13px;color:#555;width:150px}
+button{border:1px solid #ccc;background:#fff;border-radius:18px;padding:7px 14px;font-size:14px;cursor:pointer}
+button.on{background:#1d1d1b;color:#fff;border-color:#1d1d1b}
+.big{background:#fff;border:1px solid #e3e1da;border-radius:12px;padding:18px;margin:16px 0;font-size:17px;line-height:1.5}
+.big b{font-size:30px}
+.panel{background:#fff;border:1px solid #e3e1da;border-radius:12px;padding:14px;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:14px}th,td{padding:7px 8px;text-align:right;border-bottom:1px solid #eee}th:first-child,td:first-child{text-align:left}
+th{color:#666;font-weight:500}.x{font-weight:700}.mute{color:#999}
+svg text{font-size:12px;fill:#555}.note{font-size:12px;color:#777;line-height:1.5}
+</style></head><body>
+<h1>GuessWithAnki: how much faster, by language</h1>
+<div class="sub">Cards you have to learn to know a number of words, in the deck's own order vs GuessWithAnki's order. Multiplier = normal Anki's cards ÷ GuessWithAnki's.</div>
+<div class="row"><span class="lab">Language</span><span id="langs"></span></div>
+<div class="row"><span class="lab">Guess accuracy<br><span class="mute">(right on first sight when guessable)</span></span><span id="rates"></span></div>
+<div class="big" id="head"></div>
+<div class="panel"><svg id="chart" viewBox="0 0 900 330" width="100%"></svg></div>
+<div class="panel"><table id="tab"></table></div>
+<div class="note">Simulated: 20 new cards a day, Anki's default FSRS at 90% retention, a word piece learned after one sighting, 4 learners averaged; guessability labelled by gpt-5.6-terra. Language figures pool its two decks. "–" = the deck is smaller than that.</div>
+<script>
+const D={"Kaishi 1.5k": {"100": [[97, 29], [240, 93], [464, 230], [890, 723]], "80": [[98, 42], [242, 124], [474, 282], [917, 776]], "50": [[98, 62], [245, 170], [480, 367], [944, 864]], "33": [[98, 75], [246, 195], [488, 402], [962, 900]], "25": [[99, 80], [248, 208], [492, 430], [975, 928]]}, "Core 2k": {"100": [[100, 28], [242, 87], [476, 204], [898, 574]], "80": [[100, 44], [244, 120], [481, 265], [918, 660]], "50": [[100, 61], [246, 163], [485, 348], [948, 785]], "33": [[100, 75], [248, 196], [492, 403], [965, 862]], "25": [[100, 81], [248, 213], [494, 430], [975, 898]]}, "New HSK 3.0, levels 1-4": {"100": [[95, 23], [216, 60], [359, 126], [697, 280]], "80": [[96, 38], [223, 97], [392, 200], [762, 422]], "50": [[99, 62], [234, 155], [427, 313], [849, 651]], "33": [[98, 71], [239, 186], [454, 378], [899, 764]], "25": [[99, 79], [241, 202], [462, 408], [920, 823]]}, "4000 Essential English Words": {"100": [[100, 48], [249, 133], [493, 321], [978, 784]], "80": [[100, 57], [249, 156], [494, 356], [983, 827]], "50": [[100, 69], [250, 188], [496, 410], [991, 890]], "33": [[100, 85], [250, 216], [497, 444], [990, 929]], "25": [[100, 85], [250, 218], [498, 452], [996, 944]]}, "Oxford 3000": {"100": [[100, 39], [249, 107], [492, 255], [970, 714]], "80": [[100, 48], [250, 134], [494, 303], [976, 769]], "50": [[100, 66], [250, 177], [496, 372], [984, 852]], "33": [[100, 78], [249, 202], [497, 418], [990, 907]], "25": [[100, 85], [250, 217], [499, 440], [994, 929]]}, "Medical Terminology with Etymology": {"100": [[97, 70], [241, 219], [478, 468], null], "80": [[98, 76], [243, 225], [482, 474], null], "50": [[98, 83], [246, 232], [489, 482], null], "33": [[99, 90], [247, 239], [493, 489], null], "25": [[99, 94], [248, 243], [495, 493], null]}, "Hippocrates Code roots, then the terms": {"100": [[100, 59], [250, 168], [486, 416], [979, 916]], "80": [[100, 65], [250, 182], [489, 431], [983, 931]], "50": [[100, 78], [250, 209], [492, 458], [989, 958]], "33": [[100, 86], [250, 226], [496, 476], [994, 976]], "25": [[100, 85], [250, 228], [498, 478], [996, 978]]}, "HSK (2012), levels 1-5": {"100": [[100, 32], [238, 88], [467, 191], [887, 444]], "80": [[100, 46], [240, 122], [473, 256], [910, 557]], "50": [[100, 61], [243, 163], [482, 333], [947, 711]], "33": [[100, 78], [246, 198], [489, 397], [963, 820]], "25": [[100, 81], [248, 209], [494, 420], [974, 858]]}};
+const LANG={Chinese:['New HSK 3.0, levels 1-4','HSK (2012), levels 1-5'],Japanese:['Kaishi 1.5k','Core 2k'],English:['Oxford 3000','4000 Essential English Words'],Medical:['Medical Terminology with Etymology','Hippocrates Code roots, then the terms']};
+const COL={Chinese:'#c0392b',Japanese:'#2c6e9e',English:'#2e7d4f',Medical:'#8e5bb5'};
+const N=[100,250,500,1000],RATES=['100','80','50','33','25'];
+let lang='Chinese',rate='80';
+function pool(l,r,i){let a=0,b=0,k=0;for(const d of LANG[l]){const c=D[d][r][i];if(c){a+=c[0];b+=c[1];k++}}return k?{a:a/k,b:b/k,x:a/b}:null}
+function btns(id,list,get,set,fmt){const el=document.getElementById(id);el.innerHTML='';for(const v of list){const b=document.createElement('button');b.textContent=fmt(v);if(v===get())b.className='on';b.onclick=()=>{set(v);draw()};el.appendChild(b)}}
+function draw(){
+ btns('langs',Object.keys(LANG),()=>lang,v=>lang=v,v=>v);
+ btns('rates',RATES,()=>rate,v=>rate=v,v=>v+'%');
+ const p=pool(lang,rate,2);
+ document.getElementById('head').innerHTML=p?`${lang}, ${rate}% accuracy: to know <b>500</b> words you learn about <b>${Math.round(p.b)}</b> cards instead of ${Math.round(p.a)}: <b style="color:${COL[lang]}">${p.x.toFixed(1)}×</b> faster.`:'';
+ // chart: every language, selected one bold
+ const W=900,H=330,L=50,R=20,T=20,B=40,mx=Math.max(4.2,...Object.keys(LANG).flatMap(l=>N.map((n,i)=>(pool(l,rate,i)||{x:0}).x)))*1.05;
+ const X=i=>L+i*(W-L-R)/(N.length-1),Y=v=>H-B-(v-1)/(mx-1)*(H-B-T);
+ let s='';for(let v=1;v<=mx;v+=0.5){s+=`<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="#eee"/><text x="${L-8}" y="${Y(v)+4}" text-anchor="end">${v.toFixed(1)}×</text>`}
+ N.forEach((n,i)=>s+=`<text x="${X(i)}" y="${H-15}" text-anchor="middle">${n.toLocaleString()} words</text>`);
+ for(const l of Object.keys(LANG)){const pts=N.map((n,i)=>[i,pool(l,rate,i)]).filter(q=>q[1]);const on=l===lang;
+  s+=`<polyline fill="none" stroke="${COL[l]}" stroke-width="${on?4:1.8}" opacity="${on?1:.45}" points="${pts.map(q=>X(q[0])+','+Y(q[1].x)).join(' ')}"/>`;
+  for(const q of pts)s+=`<circle cx="${X(q[0])}" cy="${Y(q[1].x)}" r="${on?5:3}" fill="${COL[l]}" opacity="${on?1:.45}"><title>${l} ${N[q[0]]} words: ${q[1].x.toFixed(2)}×</title></circle>`+(on?`<text x="${X(q[0])}" y="${Y(q[1].x)-10}" text-anchor="middle" style="font-weight:700;fill:${COL[l]}">${q[1].x.toFixed(1)}×</text>`:'');
+  const lp=pts[pts.length-1];s+=`<text x="${X(lp[0])-6}" y="${Y(lp[1].x)+(on?18:14)}" text-anchor="end" style="fill:${COL[l]};font-weight:${on?700:400}">${l}</text>`}
+ document.getElementById('chart').innerHTML=s;
+ // table: the language pooled + each deck
+ let t='<tr><th>Words known</th>'+N.map(n=>`<th>${n.toLocaleString()}</th>`).join('')+'</tr>';
+ const cell=c=>c?`<span class="x">${(c[0]/c[1]).toFixed(1)}×</span><br><span class="mute">${c[0].toLocaleString()} → ${c[1].toLocaleString()} cards</span>`:'–';
+ t+=`<tr><td><b style="color:${COL[lang]}">${lang} (both decks)</b></td>`+N.map((n,i)=>{const q=pool(lang,rate,i);return '<td>'+(q?cell([Math.round(q.a),Math.round(q.b)]):'–')+'</td>'}).join('')+'</tr>';
+ for(const d of LANG[lang])t+=`<tr><td>${d}</td>`+D[d][rate].map(c=>'<td>'+cell(c)+'</td>').join('')+'</tr>';
+ document.getElementById('tab').innerHTML=t;
+}
+draw();
+</script></body></html>
