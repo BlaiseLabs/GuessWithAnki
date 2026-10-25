@@ -47,35 +47,40 @@ function chart(){
 function lvl(v){return v==null?'<span class="mute">–</span>':'<div class="bar" title="'+v+'"><i style="width:'+Math.round(v*100)+'%"></i></div>'}
 function render(){
   if(!D){$('#app').innerHTML='<p>No plan yet: run Tools → GuessWithAnki → Reorder new cards.</p>';return}
-  const t=D.totals,g=D.guessable,e=D.effect;
+  const t=D.totals,g=D.guessable,e=D.effect,P=D.profile||{name:'japanese',reads:true};
+  // what a piece is called, by profile: units, pieces, the patterns header, split / whole / none in the deck line
+  const U={japanese:['kanji','kanji readings','kanji · reading','read kanji by kanji','read as a whole','kana only','kanji'],
+    chinese:['characters','character readings','character · pinyin','read character by character','not split','without characters','character'],
+    english:['word parts','word parts','word part','split into parts','one part','not split','part'],
+    medical:['word parts','word parts','word part','split into parts','one part','not split','part']}[P.name]||[];
   let h='<h1>GuessWithAnki</h1><div class="sub">'+esc(D.settings.search)+' · planned '+esc(D.at||'')+(D.seconds!=null?' in '+D.seconds+' s':'')+(D.moved!=null?' · '+D.moved+' cards moved':'')+'</div>';
   for(const w of D.warnings||[])h+='<div class="panel warn" style="margin-top:10px">Deck options: '+esc(w)+' (set new card gather order to "Deck" or "Ascending position", and sort order to "Order gathered" or "Card type, then order gathered")</div>';
   if(D.note)h+='<div class="panel warn" style="margin-top:10px">'+esc(D.note)+'</div>';
   h+='<div class="tiles">'+
    '<div class="tile"><div class="k">Guessable on arrival, next '+e.n+' new cards</div><div class="v">'+e.before+' <span class="arrow">→</span> '+e.after+' <small>deck order → path</small></div></div>'+
-   '<div class="tile"><div class="k">New words judged guessable (reading and meaning)</div><div class="v">'+g.both+' <small>of '+g.new_kanji+' with kanji · '+pct(g.both,g.new_kanji)+'</small></div></div>'+
+   '<div class="tile"><div class="k">New words judged guessable ('+(P.reads?'reading and meaning':'meaning')+')</div><div class="v">'+g.both+' <small>of '+g.new_kanji+' with '+U[0]+' · '+pct(g.both,g.new_kanji)+'</small></div></div>'+
    '<div class="tile"><div class="k">Of the deck\'s own next '+e.n+', still in the path\'s next '+e.n+'</div><div class="v">'+(e.kept??'–')+' <small>the rest come later; the path brings guessable words forward</small></div></div>'+
-   '<div class="tile"><div class="k">Reading guessable · meaning guessable</div><div class="v">'+g.reading+' · '+g.meaning+' <small>new words</small></div></div>'+
+   (P.reads?'<div class="tile"><div class="k">Reading guessable · meaning guessable</div><div class="v">'+g.reading+' · '+g.meaning+' <small>new words</small></div></div>':'<div class="tile"><div class="k">Meaning guessable</div><div class="v">'+g.meaning+' <small>new words</small></div></div>')+
    '<div class="tile"><div class="k">Judged by</div><div class="v" style="font-size:15px;line-height:1.7">'+['crowd','deck','llm','heuristic'].map(s=>'<span class="chip">'+s+' '+(D.labels[s]||0)+'</span>').join('')+'</div></div>'+
   '</div>';
   if(D.free){const f=D.free;
    h+='<h2>Free cards</h2><div class="tiles">'+
     '<div class="tile"><div class="k">Cards studied</div><div class="v">'+f.studied+'<small>'+f.arrived_free+' of them arrived guessable (free): about '+f.effort+' needed real learning</small></div></div>'+
-    '<div class="tile"><div class="k">Words you could guess now, not studied yet</div><div class="v">'+f.guessable_now+'<small>from '+f.patterns+' kanji readings you have learned</small></div></div>'+
-    '<div class="tile"><div class="k">Virtual cards (studied + guessable × '+f.rate+')</div><div class="v">'+f.virtual+'<small>'+(f.studied?(f.virtual/f.studied).toFixed(1)+'× what you studied':'study a few cards first')+' · a reading counts as learned after '+f.seen+' sighting'+(f.seen==1?'':'s')+'</small></div></div>'+
+    '<div class="tile"><div class="k">Words you could guess now, not studied yet</div><div class="v">'+f.guessable_now+'<small>from '+f.patterns+' '+U[1]+' you have learned</small></div></div>'+
+    '<div class="tile"><div class="k">Virtual cards (studied + guessable × '+f.rate+')</div><div class="v">'+f.virtual+'<small>'+(f.studied?(f.virtual/f.studied).toFixed(1)+'× what you studied':'study a few cards first')+' · a '+U[6]+' counts as learned after '+f.seen+' sighting'+(f.seen==1?'':'s')+'</small></div></div>'+
    '</div>';}
   h+='<h2>Words guessable on arrival</h2><div class="panel">'+chart()+'</div>';
   h+='<h2>Next new cards</h2><div class="panel"><table><tr><th>#</th><th>word</th><th>meaning</th><th>reading · meaning</th><th>why here</th></tr>'+
    D.next.map(r=>'<tr><td class="mute">'+r.i+'</td><td><span class="jp">'+esc(r.word)+'</span><br><span class="mute">'+esc(r.reading)+'</span></td><td>'+esc(r.meaning)+'</td><td>'+lvl(r.r)+'<div style="height:4px"></div>'+lvl(r.m)+'</td><td>'+
      (r.guessable?'<span class="yes">guessable</span> ':'')+r.fresh.map(f=>'<span class="chip">'+esc(f[0])+' · '+f[1]+' ago</span>').join('')+r.spaced.map(p=>'<span class="chip">'+esc(p)+' · spaced</span>').join('')+
      (r.setup>0?' <span class="mute">opens '+r.setup+' word'+(r.setup==1?'':'s')+'</span>':'')+(!r.guessable&&!r.setup?'<span class="no">deck order</span>':'')+'</td></tr>').join('')+'</table></div>';
-  h+='<div class="two"><div><h2>Patterns (kanji · reading)</h2><div class="panel"><table><tr><th>pattern</th><th>words</th><th>met</th><th>status</th><th>next in</th></tr>'+
+  h+='<div class="two"><div><h2>Patterns ('+U[2]+')</h2><div class="panel"><table><tr><th>pattern</th><th>words</th><th>met</th><th>status</th><th>next in</th></tr>'+
    D.patterns.map(p=>'<tr><td class="jp">'+esc(p.p)+'</td><td>'+p.words+'</td><td>'+p.seen+'</td><td>'+esc(p.status)+(p.gap?' <span class="mute">gap '+p.gap+'</span>':'')+'</td><td>'+(p.next==null?'–':p.next+1)+'</td></tr>').join('')+'</table></div></div>'+
-   '<div><h2>Could be confused ('+D.confusable_total+')</h2><div class="panel"><table><tr><th>word</th><th>kanji read here</th><th>also read</th></tr>'+
+   '<div><h2>Could be confused ('+D.confusable_total+')</h2><div class="panel"><table><tr><th>word</th><th>'+U[6]+' read here</th><th>also read</th></tr>'+
    D.confusable.map(c=>'<tr><td><span class="jp">'+esc(c.word)+'</span><br><span class="mute">'+esc(c.reading)+'</span></td><td><span class="jp">'+esc(c.kanji)+'</span> '+esc(c.here)+' <span class="mute">'+Math.round(c.here_dict*100)+'% of words</span></td><td>'+
      c.others.map(o=>'<span class="chip">'+esc(o.r)+' '+Math.round(o.dict*100)+'%'+(o.deck?' · '+o.deck+' here':'')+'</span>'+(o.examples.length?'<span class="mute">'+esc(o.examples.join('、'))+'</span> ':'')).join('<br>')+'</td></tr>').join('')+'</table></div></div></div>';
-  h+='<h2>Deck</h2><div class="panel sub">'+t.words+' words: '+t.kanji+' with kanji ('+t.split+' read kanji by kanji, '+t.irregular+' read as a whole), '+t.kana+' kana only · '+t.started+' studied, '+t.new+' new · window '+D.settings.window+' · planned ahead '+D.settings.ahead+' · pattern spacing '+(D.settings.spacing?'on':'off')+
-   ' · guessable at reading ≥ '+D.settings.thresholds.reading+', meaning ≥ '+D.settings.thresholds.meaning+'</div>';
+  h+='<h2>Deck</h2><div class="panel sub">'+t.words+' words: '+t.kanji+' with '+U[0]+' ('+t.split+' '+U[3]+', '+t.irregular+' '+U[4]+'), '+t.kana+' '+U[5]+' · '+t.started+' studied, '+t.new+' new · window '+D.settings.window+' · planned ahead '+D.settings.ahead+' · pattern spacing '+(D.settings.spacing?'on':'off')+
+   ' · guessable at '+(P.reads?'reading ≥ '+D.settings.thresholds.reading+', ':'')+'meaning ≥ '+D.settings.thresholds.meaning+'</div>';
   $('#app').innerHTML=h;
 }
 render();

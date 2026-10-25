@@ -5,6 +5,7 @@
 #   GP_PYTHON    a Python with aqt installed (default: python3)
 #   GP_E2E_DIR   where the throwaway base and results go (default: ~/gp-e2e)
 #   GP_EMBED     optional: an embeddings.json cache to start from (skips minutes of embedding)
+#   GP_E2E_DECK, GP_E2E_FIELD   another deck to drive and its word field (default: the demo's Common Words, Expression)
 set -e
 cd "$(dirname "$0")/.."
 PY=${GP_PYTHON:-python3}

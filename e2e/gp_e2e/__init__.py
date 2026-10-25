@@ -19,6 +19,8 @@ from aqt.qt import QApplication, QDialog, QInputDialog, QMessageBox, QRadioButto
 from aqt.qt import QDialogButtonBox
 
 OUT = Path(os.environ.get("GP_E2E_OUT", "/tmp/gp_e2e"))
+DECK = os.environ.get("GP_E2E_DECK", "Common Words")      # (the demo deck; any deck with its word field named below)
+FIELD = os.environ.get("GP_E2E_FIELD", "Expression")
 R = {"steps": [], "ok": True}
 
 
@@ -85,15 +87,16 @@ def last():
 
 
 def queue_words(n):
-    return [mw.col.get_card(c.card.id).note()["Expression"] for c in mw.col.sched.get_queued_cards(fetch_limit=n).cards]
+    return [mw.col.get_card(c.card.id).note()[FIELD] for c in mw.col.sched.get_queued_cards(fetch_limit=n).cards]
 
 
 @guarded
 def step1():
     s = last()
-    did = mw.col.decks.id("Common Words")
+    did = mw.col.decks.id(DECK)
     mw.col.decks.select(did)
     planned = [r["word"] for r in s["next"][:6]]
+    R["started0"] = s["totals"]["started"]
     q = queue_words(6)
     log("1 auto reorder at profile open", s["moved"] > 0 and q == planned, moved=s["moved"], effect=[s["effect"]["before"], s["effect"]["after"]],
         planned=planned, queue=q)
@@ -133,7 +136,7 @@ def step3():
         if mw.state != "review" or mw.reviewer.card is None:
             log("3 a card to study", False, state=mw.state)
             return finish()
-        seen.append(mw.reviewer.card.note()["Expression"])
+        seen.append(mw.reviewer.card.note()[FIELD])
         if i == 0:
             shot(mw, "3_question")
         QTest.keyClick(mw, Qt.Key.Key_Space)
@@ -150,7 +153,7 @@ def step3():
 @guarded
 def step4():
     from PyQt6.QtTest import QTest
-    word = mw.reviewer.card.note()["Expression"]
+    word = mw.reviewer.card.note()[FIELD]
 
     def fill():
         d = QApplication.activeModalWidget()
@@ -179,7 +182,7 @@ def step4():
 @guarded
 def step5():
     s = last()
-    log("5 auto reorder after the review session", s is not None and s["totals"]["started"] >= 156, started=s["totals"]["started"],
+    log("5 auto reorder after the review session", s is not None and s["totals"]["started"] >= R["started0"] + 6, started=s["totals"]["started"],
         effect=[s["effect"]["before"], s["effect"]["after"]])
 
     def answer_int():

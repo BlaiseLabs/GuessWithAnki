@@ -117,7 +117,10 @@ def summary(a, order, why, before, cfg, warnings=()):
                     "setup": w.get("setup", 0), "r": None if it.reading_g is None else round(it.reading_g, 2),
                     "m": None if it.meaning_g is None else round(it.meaning_g, 2),
                     "src": {k: [None if x is None else round(x, 2) for x in v] for k, v in (it.sources or {}).items()}})
+    from .model import profile
+    prof = profile()
     return {
+        "profile": {"name": prof.name, "reads": prof.reads},
         "totals": {"words": len(a.items), "kanji": sum(1 for it in a.items if it.has_kanji),
                    "split": sum(1 for it in a.items if it.split), "irregular": sum(1 for it in a.items if it.has_kanji and not it.split),
                    "kana": sum(1 for it in a.items if not it.has_kanji), "new": len(a.new), "started": len(a.started)},
