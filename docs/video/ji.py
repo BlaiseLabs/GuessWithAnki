@@ -55,23 +55,26 @@ class Ji(VGroup):
             p.move_to(e.get_center() + off)
             eyes.add(VGroup(e, p))
         # brows for doubt / sad / confused
+        # always two brows (hidden in moods without them), so any mood morphs into any other: a mood with
+        # fewer parts would make Transform collapse the extra ones to a point at the screen's centre
         brows = VGroup()
-        if mood in ("doubt", "sad", "confused", "wow"):
-            for side, s in ((LEFT, -1), (RIGHT, 1)):
-                y = eh * 0.75
-                if mood == "doubt":
-                    tilt = 0.25 if s > 0 else -0.05
-                    y = eh * (0.85 if s > 0 else 0.55)
-                elif mood == "sad":
-                    tilt = 0.25 * s
-                elif mood == "confused":
-                    tilt = -0.2 * s
-                else:
-                    tilt = 0.0
-                    y = eh * 0.95
-                ln = Line(LEFT * ew * 0.45, RIGHT * ew * 0.45, color=PUPIL, stroke_width=5).rotate(tilt)
-                ln.move_to(c + side * gap + UP * y)
-                brows.add(ln)
+        shown = mood in ("doubt", "sad", "confused", "wow")
+        for side, s in ((LEFT, -1), (RIGHT, 1)):
+            y, tilt = eh * 0.75, 0.0
+            if mood == "doubt":
+                tilt = 0.25 if s > 0 else -0.05
+                y = eh * (0.85 if s > 0 else 0.55)
+            elif mood == "sad":
+                tilt = 0.25 * s
+            elif mood == "confused":
+                tilt = -0.2 * s
+            elif mood == "wow":
+                y = eh * 0.95
+            ln = Line(LEFT * ew * 0.45, RIGHT * ew * 0.45, color=PUPIL, stroke_width=5).rotate(tilt)
+            ln.move_to(c + side * gap + UP * y)
+            if not shown:
+                ln.set_stroke(opacity=0)
+            brows.add(ln)
         # a small mouth under the eyes, on the crossbar of 子
         m_c = c + DOWN * 0.22 * h
         if mood == "happy":

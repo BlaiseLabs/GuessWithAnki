@@ -69,7 +69,10 @@ def tile(ch, reading, meaning, color=BLUE):
                            stroke_color=color, stroke_width=4)
     k = T(ch, 72, INK, JP, "BOLD")
     r = VGroup(T(reading, 34, INK, JP), T(meaning, 26, MUTE)).arrange(DOWN, buff=0.08, aligned_edge=LEFT)
-    return VGroup(box, VGroup(k, r).arrange(RIGHT, buff=0.35).move_to(box))
+    inner = VGroup(k, r).arrange(RIGHT, buff=0.35)
+    if inner.width + 0.6 > box.width:
+        box.stretch_to_fit_width(inner.width + 0.6)
+    return VGroup(box, inner.move_to(box))
 
 
 def check(size=0.5, color=GREEN):
@@ -89,6 +92,14 @@ def bulb(size=1.0):
     rays = VGroup(*[Line(ORIGIN, UP * 0.25, color=YELLOW, stroke_width=5).shift(UP * 0.62).rotate(a, about_point=ORIGIN)
                     for a in np.linspace(-1.2, 1.2, 5)])
     return VGroup(rays, glass, base).scale(size)
+
+
+def keep_in_frame(m, margin=0.25):
+    """shift m back inside the frame"""
+    fx, fy = config.frame_width / 2 - margin, config.frame_height / 2 - margin
+    dx = max(0, -fx - m.get_left()[0]) - max(0, m.get_right()[0] - fx)
+    dy = max(0, -fy - m.get_bottom()[1]) - max(0, m.get_top()[1] - fy)
+    return m.shift(RIGHT * dx + UP * dy)
 
 
 def bubble(content, color=PANEL, stroke=MUTE, pad=0.3):
@@ -114,15 +125,118 @@ def lock(color=MUTE):
     return VGroup(body, shackle)
 
 
+# ------------------------------------------------------------------------------------------------- layout checks
+import os  # noqa: E402
+
+CHECK = os.environ.get("GWA_CHECK") == "1"
+FX, FY = config.frame_width / 2, config.frame_height / 2
+BOXES = (Rectangle, RoundedRectangle, Square)
+
+
+def _bbox(m):
+    return (m.get_left()[0], m.get_right()[0], m.get_bottom()[1], m.get_top()[1])
+
+
+def _visible(m):
+    pts = [sm for sm in m.family_members_with_points()]
+    if not pts:
+        return False
+    return max(max(sm.get_fill_opacity(), sm.get_stroke_opacity()) for sm in pts) > 0.15
+
+
+def _inter(a, b, pad=0.03):
+    w = min(a[1], b[1]) - max(a[0], b[0]) - pad
+    h = min(a[3], b[3]) - max(a[2], b[2]) - pad
+    return w * h if w > 0 and h > 0 else 0.0
+
+
+def _inside(a, b, tol=0.03):
+    return a[0] >= b[0] - tol and a[1] <= b[1] + tol and a[2] >= b[2] - tol and a[3] <= b[3] + tol
+
+
+def _name(m):
+    if isinstance(m, Text):
+        return "text %r" % getattr(m, "original_text", getattr(m, "text", "?"))[:40]
+    if isinstance(m, Ji):
+        return "Gaku"
+    if isinstance(m, ImageMobject):
+        return "image"
+    return "%s %.1fx%.1f at (%.1f, %.1f)" % (type(m).__name__, m.width, m.height, m.get_x(), m.get_y())
+
+
+def layout_items(mobjects):
+    """the visible texts, boxes (filled rectangles, images) and Gakus on screen"""
+    texts, boxes, jis = [], [], []
+
+    def walk(m):
+        if isinstance(m, Ji):
+            if _visible(m.body):
+                jis.append(m)
+            return
+        if isinstance(m, Text):
+            if _visible(m) and m.width > 0.01:
+                texts.append(m)
+            return
+        if isinstance(m, ImageMobject):
+            boxes.append(m)
+            return
+        if isinstance(m, BOXES) and m.get_fill_opacity() > 0.3 and m.width > 0.3 and m.height > 0.3:
+            boxes.append(m)
+        for sm in m.submobjects:
+            walk(sm)
+    for m in mobjects:
+        walk(m)
+    return texts, boxes, jis
+
+
+def layout_problems(mobjects):
+    texts, boxes, jis = layout_items(mobjects)
+    out = []
+    for m in texts + boxes + jis:
+        b = _bbox(m)
+        if b[0] < -FX + 0.05 or b[1] > FX - 0.05 or b[2] < -FY + 0.05 or b[3] > FY - 0.05:
+            out.append(("off-frame", _name(m), ""))
+    for i, a in enumerate(texts):
+        for b in texts[i + 1:]:
+            if _inter(_bbox(a), _bbox(b)) > 0.01:
+                out.append(("text-on-text", _name(a), _name(b)))
+        for bx in boxes:
+            ia = _inter(_bbox(a), _bbox(bx))
+            if ia > 0.01 and not _inside(_bbox(a), _bbox(bx)):
+                out.append(("text-out-of-box", _name(a), _name(bx)))
+        for j in jis:
+            if _inter(_bbox(a), _bbox(j)) > 0.01:
+                out.append(("text-on-Gaku", _name(a), ""))
+    for j in jis:
+        for bx in boxes:
+            if _inter(_bbox(j), _bbox(bx)) > 0.01:
+                out.append(("box-on-Gaku", _name(bx), ""))
+        for k in jis:
+            if k is not j and id(k) > id(j) and _inter(_bbox(j), _bbox(k)) > 0.01:
+                out.append(("Gaku-on-Gaku", "", ""))
+    return out
+
+
 # -------------------------------------------------------------------------------------------------------- the base
 class Beats(Scene):
     def setup(self):
         self.starts = {}
+        self.problems = {}
+        self.cur = "start"
+
+    def play(self, *args, **kw):
+        super().play(*args, **kw)
+        if CHECK:
+            for kind, a, b in layout_problems(self.mobjects):
+                key = "%s | %s | %s" % (kind, a, b)
+                if key not in self.problems:
+                    self.problems[key] = {"beat": self.cur, "t": round(self.now(), 2)}
 
     def now(self):
         return self.renderer.time
 
     def beat(self, sid):
+        self.cur = sid
         self.starts[sid] = round(self.now(), 3)
         return self.now() + dur(sid) + GAP
 
@@ -136,6 +250,8 @@ class Beats(Scene):
         out.mkdir(exist_ok=True)
         (out / ("starts_%s.json" % type(self).__name__)).write_text(
             json.dumps({"starts": self.starts, "end": round(self.now(), 3)}))
+        if CHECK:
+            (out / ("layout_%s.json" % type(self).__name__)).write_text(json.dumps(self.problems, indent=1, ensure_ascii=False))
 
     def clear_all(self, keep=(), run_time=0.5):
         mobs = [m for m in self.mobjects if m not in keep]
@@ -159,7 +275,8 @@ class S01Intro(Beats):
         self.play(FadeIn(ji, shift=RIGHT * 0.3), run_time=0.5)
         self.play(ji.look_at(UR))
         guess = bubble(T("…でんき? electricity?", 34, INK, JP)).next_to(front, RIGHT, buff=0.4).shift(UP * 0.9)
-        guess.scale_to_fit_width(min(guess.width, 4.6))
+        guess.scale_to_fit_width(min(guess.width, 4.4))
+        keep_in_frame(guess)
         self.play(FadeIn(guess, shift=LEFT * 0.2), run_time=0.6)
         self.wait(max(0.1, dur("i01") * 0.25))
         back = card("電気", "でんき", "electricity").move_to(front)
@@ -218,7 +335,7 @@ class S02Disclaimer(Beats):
         self.play(FadeOut(VGroup(lanes, finish, runners, x, txt)), run_time=0.5)
         q = T("?", 90, YELLOW, weight="BOLD").next_to(ji, UP, buff=0.2)
         self.play(FadeIn(q, shift=UP * 0.2), ji.mood_to("think"), run_time=0.6)
-        b = bulb(1.2).move_to(q)
+        b = bulb(1.2).next_to(ji, UP, buff=0.12)
         self.play(ReplacementTransform(q, b), ji.mood_to("happy"), run_time=0.7)
         words = VGroup(T("curious about something", 44, INK), T("↓", 44, MUTE), T("follow it", 44, INK),
                        T("↓", 44, MUTE), T("learning the language gets more fun", 44, GREEN)).arrange(DOWN, buff=0.18)
@@ -296,9 +413,8 @@ class S04Story(Beats):
         self.play(FadeIn(me, shift=UP * 0.2), FadeIn(me_lab), run_time=0.6)
         self.play(FadeIn(sensei, shift=UP * 0.2), FadeIn(s_lab), me.look_at(RIGHT), run_time=0.6)
         words = ["銀行", "改札", "締切", "検討", "訪問"]
-        cards = VGroup(*[small_card(w, w=2.0, h=1.3, size=50) for w in words])
-        for i, c in enumerate(cards):
-            c.move_to(UP * 2.0 + RIGHT * (i * 0.25 - 0.5) + LEFT * 0.4)
+        cards = VGroup(*[small_card(w, w=2.0, h=1.3, size=50) for w in words]).arrange(RIGHT, buff=0.3)
+        cards.move_to(UP * 2.4)
         self.play(LaggedStart(*[FadeIn(c, shift=LEFT * 0.4) for c in cards], lag_ratio=0.2), run_time=1.2)
         self.hold(e)
 
@@ -325,7 +441,7 @@ class S04Story(Beats):
 
         e = self.beat("s03")
         self.play(FadeOut(VGroup(shown, others)), run_time=0.4)
-        para = T("既存の顧客との関係を維持しつつ、\n新規開拓にも注力する必要がある。", 40, INK, JP).shift(UP * 1.3 + RIGHT * 0.3)
+        para = T("既存の顧客との関係を維持しつつ、\n新規開拓にも注力する必要がある。", 40, INK, JP).shift(UP * 2.3 + RIGHT * 0.3)
         self.play(FadeIn(para), me.mood_to("confused"), run_time=0.6)
         random.seed(3)
         glyphs = VGroup()
@@ -369,8 +485,9 @@ class S04Story(Beats):
         b = bulb(1.1).next_to(me, UP, buff=0.25)
         self.play(GrowFromCenter(b), run_time=0.5)
         q1 = T("How often does this actually happen?", 40, INK, weight="BOLD", max_width=9.0).move_to(RIGHT * 1.4 + UP * 1.0)
-        q2 = VGroup(T("a fluke?", 40, MUTE), T("or something you can count on?", 40, GREEN)).arrange(RIGHT, buff=0.6)
+        q2 = VGroup(T("a fluke?", 38, MUTE), T("or something you can count on?", 38, GREEN)).arrange(DOWN, buff=0.3)
         q2.next_to(q1, DOWN, buff=0.6)
+        keep_in_frame(q2)
         self.wait(max(0.1, dur("s05") * 0.25))
         self.play(Write(q1), me.mood_to("think"), run_time=1.0)
         self.wait(0.6)
@@ -828,7 +945,7 @@ class S08Languages(Beats):
         for big_, small_, col in (("日本語", "Japanese", BLUE), ("中文", "Chinese", RED), ("Aa", "English learners", GREEN), ("Rx", "medical students", PURPLE)):
             box = RoundedRectangle(corner_radius=0.2, width=2.5, height=2.2, fill_color=PANEL, fill_opacity=1, stroke_color=col, stroke_width=4)
             b_ = T(big_, 54, col, JP, "BOLD").move_to(box).shift(UP * 0.25)
-            s_ = T(small_, 22, INK).next_to(b_, DOWN, buff=0.2)
+            s_ = T(small_, 22, INK, max_width=2.2).next_to(b_, DOWN, buff=0.2)
             langs.add(VGroup(box, b_, s_))
         langs.arrange(RIGHT, buff=0.35).shift(RIGHT * 0.7 + DOWN * 0.1)
         self.play(LaggedStart(*[FadeIn(l, shift=UP * 0.2) for l in langs], lag_ratio=0.3), run_time=1.6)
