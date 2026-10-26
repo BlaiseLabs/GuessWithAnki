@@ -193,21 +193,52 @@ restart Anki. Tools > GuessWithAnki > Dashboard plans for the first time.
 Your deck options must let positions decide, so set the new card gather order to "Deck" or "Ascending position" and
 the sort order to "Order gathered" or "Card type, then order gathered". The dashboard warns when they don't.
 
-#### Optional, a local model for sharper judgments
+#### Recommended, Ollama for sharper judgments
 
-Without a model, meanings are judged by word overlap and everything works. A local model adds two things, sharper
-meaning judgments (embeddings) and "Label with model", where a model judges each word. The easiest way is
-[Ollama](https://ollama.com), which is free and runs on your own computer. Install it, then pull the two models.
+Without a model, meanings are judged by word overlap and everything works. A model adds two things, sharper meaning
+judgments (embeddings) and "Label with model", where a model judges each word. Since GuessWithAnki runs in desktop
+Anki, we recommend installing [Ollama](https://ollama.com) on the same computer. It's free, runs models on your own
+machine, and the add-on is already set up for it. Install it, then pull the two models.
 
 ```
-ollama pull embeddinggemma        # meaning similarity (300M, runs anywhere)
+ollama pull embeddinggemma        # meaning similarity (300M, runs on any computer)
 ollama pull gemma4:12b-it-qat     # the labelling model (or any model, set it in the settings)
 ```
 
-Ollama isn't required for this. Both settings accept any server with an OpenAI-style API, so LM Studio, llama.cpp's
-server, vLLM, or a cloud API such as OpenAI's (with an API key) work too. Set `embeddings` and `llm` (address, model,
-key) in the settings. Thinking models answer with `reasoning_effort` set to `"none"` by default, and batches of 20
-words fit Ollama's default 4,096-token context.
+The embedding model is small and runs anywhere. The labelling model is much bigger, so if your computer struggles,
+pull a smaller model and put its name in the `llm` setting. That's all. The add-on finds Ollama at its usual address
+by itself.
+
+#### Using another model server, or a cloud model
+
+Ollama isn't required. The add-on talks to model servers through two separate settings, `embeddings` and `llm`, each
+with its own address (`base_url`), model name and optional API key, so they can point to different places, for
+example embeddings from a local Ollama and labels from a cloud model.
+
+```json
+"embeddings": {"base_url": "http://127.0.0.1:11434/v1", "model": "embeddinggemma", "api_key": ""},
+"llm":        {"base_url": "http://127.0.0.1:11434/v1", "model": "gemma4:12b-it-qat", "api_key": ""}
+```
+
+It always speaks one format, OpenAI's API, which most model servers offer. For embeddings it calls
+`{base_url}/embeddings`, and for labels it calls `{base_url}/chat/completions` and asks for a JSON answer that fits a
+schema (if a server rejects schemas, it retries with plain JSON mode by itself). So any server that offers those two
+endpoints works, including Ollama (its `/v1` address), LM Studio, llama.cpp's server, vLLM, OpenAI, and many cloud
+providers through their OpenAI-compatible endpoints. A provider with its own format can be reached through a gateway
+such as OpenRouter or LiteLLM. Use the address each server documents, including its `/v1` part.
+
+- **API keys.** Cloud models need one. Put it in that block's `api_key` field, and the add-on sends it the standard
+  way, as an `Authorization: Bearer` header. Local servers leave it empty. The key is stored in plain text in Anki's
+  add-on settings on that computer.
+- **Cloud models through Ollama.** Ollama also offers its own [cloud models](https://ollama.com/blog/cloud-models),
+  which run on ollama.com's hardware but are used through your local Ollama. Sign in with `ollama signin`, then put a
+  cloud model's name (they end in `:cloud`) in the `llm` setting, and the address stays the same, with no key in the
+  add-on. Ollama doesn't pass requests on to other providers, though, so for a model from OpenAI or another company,
+  point the add-on at that provider directly.
+- **Picky models.** `reasoning_effort` is set to `"none"` by default, which stops thinking models such as Gemma 4 from
+  spending their whole answer on hidden reasoning. Empty it for servers that reject the field. Some reasoning models
+  also refuse a temperature, so add `"temperature": false` to the `llm` block for those.
+- **Batch size.** Batches of 20 words fit Ollama's default 4,096-token context.
 
 ## Settings
 
@@ -215,6 +246,17 @@ Tools > GuessWithAnki > Settings (see `guesswithanki/config.md`). The ones that 
 `profile` (what kind of deck, `auto` by default), `path.window` (how many cards back a piece still counts as fresh),
 `guessable` (the levels a word needs), `sources` (how much crowd, model and heuristic labels weigh), `llm.per_day`,
 `free` (how the dashboard counts free cards) and `sentry_dsn`.
+
+## Sharing a reordered deck
+
+Anki's own export keeps the order. Use File > Export, pick "Anki Deck Package (.apkg)" and your deck, and leave
+"Include scheduling information" off. Whoever imports it gets the new cards in GuessWithAnki's order, even without the
+add-on. Cards you've already studied go back to their place in the path, since Anki remembers each card's original
+position. (Tested with Anki 26.09, importing into a collection that already had cards.)
+
+The order fits your own study history. Someone who imports the deck and also has GuessWithAnki gets it planned again
+for theirs, the first time they open Anki. To share your guessability labels along with it, use Tools >
+GuessWithAnki > Write labels into the deck before exporting (see below).
 
 ## Sharing labels
 
