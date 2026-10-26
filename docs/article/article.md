@@ -1,6 +1,6 @@
 ---
-title: "Study Less, Learn More with GuessWithAnki (Japanese, Chinese, English, and Medicine)"
-published: false
+title: "GuessWithAnki: Study Less, Learn More (Japanese, Chinese, English, and Medicine)"
+published: true
 tags: devchallenge, hf26challenge, gemma, sentry
 cover_image: https://raw.githubusercontent.com/BlaiseLabs/GuessWithAnki/main/docs/article/cover.png
 ---
