@@ -49,8 +49,7 @@ SECTIONS = [
         ("g04", "So I used one of the simplest ideas in computer science: a greedy algorithm."),
         ("g05", "A greedy algorithm builds an answer one step at a time, and at every step it just takes whatever looks best right now. It never goes back and changes an earlier choice. It doesn't promise the perfect answer, but it's fast, and for a lot of problems it gets really close."),
         ("g06", "Here, every step asks one question. Of all the cards left, which one should come next? A card that's guessable right now wins, especially if you just saw its kanji."),
-        ("g07", "If nothing is guessable, it picks an opener: a card that brings in just one new piece. So toru, to take, comes first. Then modoru, to return. And then torimodosu, to take back, shows up already guessable.",
-         "If nothing is guessable, it picks an opener: a card that brings in just one new piece. So toh-roo, to take, comes first. Then moh-doh-roo, to return. And then toh-ree moh-doh-soo, to take back, shows up already guessable."),
+        ("g07", "If nothing else is guessable, it picks an opener: a card that just brings in one new piece. So toru, to take, comes first. Then modoru, to return. And then torimodosu, to take back, shows up already guessable."),
         ("g08", "Run that over my deck, and of the next five hundred cards, the number that arrive guessable goes from 66 to 307.",
          "Run that over my deck, and of the next five hundred cards, the number that arrive guessable goes from sixty-six to three hundred and seven."),
     ]),
@@ -108,12 +107,22 @@ BLOCKS = [
 ]
 
 
+# how the voice is told to say a word (the user's picks from the pronunciation samples, 2026-10-26)
+RESPELL = [(r"\bAnki\b", "Ahnkey"), (r"\bkanji", "kaanji")]
+# segments read by the user, not the clone (their recording, converted to the clone's voice)
+RECORDED = {"g06", "g07", "g08"}
+
+
 def segments():
     """[(section, id, text, say)]"""
+    import re
     out = []
     for sec, segs in SECTIONS:
         for s in segs:
-            out.append((sec, s[0], s[1], s[2] if len(s) > 2 else s[1]))
+            say = s[2] if len(s) > 2 else s[1]
+            for a, b in RESPELL:
+                say = re.sub(a, b, say)
+            out.append((sec, s[0], s[1], say))
     return out
 
 
