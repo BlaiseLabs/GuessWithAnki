@@ -10,7 +10,7 @@ from .ankiio import collect, queue_settings, reposition, split_started
 from .labels import Store
 from .model import guessable, judge
 from .path import plan
-from .remote import Embedder
+from .remote import Embedder, reachable
 
 DEFAULTS = Path(__file__).resolve().parents[1] / "config.json"
 
@@ -39,6 +39,10 @@ class Analysis:
     note: str = ""
 
 
+NO_EMBEDDINGS = ("Meanings are judged by word overlap, since no local embedding model is running. That works fine. "
+                 "For sharper meaning judgments you can install Ollama and run \"ollama pull embeddinggemma\" (see the README).")
+
+
 def analyse(col, cfg, files, use_server=True, progress=None):
     files = Path(files)
     cfg = merged(cfg)
@@ -46,12 +50,16 @@ def analyse(col, cfg, files, use_server=True, progress=None):
     store = Store(files / "labels.jsonl")
     hc, note = cfg["heuristic"], ""
     from .trace import tracer
-    emb = (Embedder(cfg["embeddings"], files / "embeddings.json", tracer(cfg.get("sentry_dsn")))
-           if use_server and hc.get("meaning") == "embeddings" else None)
+    emb = None
+    if use_server and hc.get("meaning") == "embeddings":
+        if reachable(cfg["embeddings"]["base_url"]):
+            emb = Embedder(cfg["embeddings"], files / "embeddings.json", tracer(cfg.get("sentry_dsn")))
+        else:
+            note, hc = NO_EMBEDDINGS, dict(hc, meaning="words")
     try:
         heur = heuristic.score(items, hc, emb, progress)
-    except Exception as e:                       # noqa: BLE001  (no embedding server: fall back to word overlap)
-        note = "embedding server not reachable (%s): meaning by word overlap instead" % (str(e)[:80])
+    except Exception:                            # noqa: BLE001  (the server went away mid-way: word overlap)
+        note = NO_EMBEDDINGS
         heur = heuristic.score(items, dict(hc, meaning="words"))
     from .embedded import read
     judge(items, store, heur, cfg, read(col, items))

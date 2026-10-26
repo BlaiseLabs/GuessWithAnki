@@ -61,9 +61,8 @@ def reorder(quiet=False, then=None):
             s.update(moved=moved, at=time.strftime("%Y-%m-%d %H:%M"))
             (fd / "last.json").write_text(json.dumps(s, ensure_ascii=False), encoding="utf-8")
             e = s["effect"]
-            msg = "GuessWithAnki: next %d new cards, %d guessable on arrival (deck order: %d)" % (e["n"], e["after"], e["before"])
-            if s.get("note"):
-                msg += "<br>" + s["note"]
+            msg = "GuessWithAnki reordered your new cards. Of the next %d, %d arrive guessable (%d in the deck's order)." % (
+                e["n"], e["after"], e["before"])
             tooltip(msg, period=4000)
             if then:
                 then(s)
@@ -129,6 +128,13 @@ def label_job(limit=None):
         tooltip("GuessWithAnki: a labelling job is already running")
         return
     c, fd = cfg(), files()
+    from .core.remote import reachable
+    if not reachable(c["llm"]["base_url"]):
+        showInfo("Labelling with a model needs a model server (Ollama, by default), and none is running at %s, so "
+                 "nothing was labelled.\n\nGuessWithAnki works without it, using its built-in judgments. To add model "
+                 "labels, install Ollama and run \"ollama pull %s\", or point the llm setting at another server."
+                 % (c["llm"]["base_url"], c["llm"]["model"]), parent=mw)
+        return
     _busy["label"] = True
     stop = {"now": False}
 

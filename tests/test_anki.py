@@ -130,3 +130,24 @@ def test_write_into_the_deck_round_trip(col, tmp_path):
                 "source": "crowd", "by": "me"}])
     embedded.write(col, items, store)                       # (a new vote replaces the old tags)
     assert set(col.get_note([it for it in items if it.word == "電気"][0].nid).tags) == {"guesswithanki::reading::no", "guesswithanki::meaning::no"}
+
+
+def test_reorder_without_an_embedding_server_still_works(col, tmp_path):
+    """(a first user, 2026-10-26: no Ollama on their Mac, Errno 61; the reorder must finish, quickly, and say so calmly)"""
+    import time
+    cfg = {"guessable": {"reading": 0.5, "meaning": 0.0}, "heuristic": {"meaning": "embeddings"},
+           "embeddings": {"base_url": "http://127.0.0.1:9/v1", "model": "x"}, "path": {"window": 3, "ahead": 20}}
+    t = time.time()
+    s = run.reorder(col, cfg, tmp_path / "files", use_server=True)
+    assert time.time() - t < 10
+    assert s["moved"] > 0 and s["note"] == run.NO_EMBEDDINGS
+    assert "not reachable" not in s["note"] and "Errno" not in s["note"]
+
+
+def test_the_server_check_is_quick():
+    import time
+    from guesswithanki.core.remote import reachable
+    assert reachable("http://127.0.0.1:9/v1") is False
+    t = time.time()
+    assert reachable("http://10.255.255.1:11434/v1", timeout=1.0) is False     # (nothing answers at all)
+    assert time.time() - t < 2.5

@@ -9,6 +9,20 @@ import urllib.request
 from pathlib import Path
 
 
+def reachable(base_url, timeout=1.5):
+    """is anything listening at the server's host and port? (a quick check, so a missing local server costs
+    a second and a half, not a long timeout)"""
+    import socket
+    from urllib.parse import urlparse
+    u = urlparse(base_url)
+    port = u.port or (443 if u.scheme == "https" else 80)
+    try:
+        with socket.create_connection((u.hostname or "127.0.0.1", port), timeout=timeout):
+            return True
+    except OSError:
+        return False
+
+
 def post(base_url, path, body, api_key="", timeout=600):
     req = urllib.request.Request(base_url.rstrip("/") + path, data=json.dumps(body).encode("utf-8"),
                                  headers={"Content-Type": "application/json"})
