@@ -39,8 +39,9 @@ class Analysis:
     note: str = ""
 
 
-NO_EMBEDDINGS = ("Meanings are judged by word overlap, since no local embedding model is running. That works fine. "
-                 "For sharper meaning judgments you can install Ollama and run \"ollama pull embeddinggemma\" (see the README).")
+NO_EMBEDDINGS = ("Meanings are judged by word overlap, since no local embedding model is running. That works fine, "
+                 "nothing else is needed. For sharper meaning judgments you can optionally install Ollama (ollama.com) "
+                 "and run \"ollama pull embeddinggemma\".")
 
 
 def analyse(col, cfg, files, use_server=True, progress=None):

@@ -130,9 +130,10 @@ def label_job(limit=None):
     c, fd = cfg(), files()
     from .core.remote import reachable
     if not reachable(c["llm"]["base_url"]):
-        showInfo("Labelling with a model needs a model server (Ollama, by default), and none is running at %s, so "
-                 "nothing was labelled.\n\nGuessWithAnki works without it, using its built-in judgments. To add model "
-                 "labels, install Ollama and run \"ollama pull %s\", or point the llm setting at another server."
+        showInfo("Labelling with a model needs a model server, and none is running at %s, so nothing was labelled."
+                 "\n\nGuessWithAnki works without it, using its built-in judgments. To add model labels, install "
+                 "Ollama from https://ollama.com and run \"ollama pull %s\". Any server with an OpenAI-style API works "
+                 "too (LM Studio, llama.cpp, or a cloud API with a key), set under llm in the settings."
                  % (c["llm"]["base_url"], c["llm"]["model"]), parent=mw)
         return
     _busy["label"] = True
