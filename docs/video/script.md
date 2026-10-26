@@ -266,7 +266,7 @@ curious. And then go spend that time in the language.
 
 | Claim | Number | Source |
 |---|---|---|
-| My deck's guessability | 2,038 words: reading 96%, meaning 69% (95% at least partly), both 67% | terra labels of the BJT deck (GuessWithKanji work) |
+| My deck's guessability | 2,038 words: reading 96%, meaning 69% (95% at least partly), both 67% | model labels of my deck (GuessWithKanji work) |
 | Reading splitter check | 99.0% of 17,854 common words | GuessWithKanji README (vs JmdictFurigana) |
 | Path on my deck | 66 → 307 guessable in the next 500 | GuessWithKanji measurement |
 | Best case | JLPT N5–N1: 100 words from 16 cards (6.2×), 100% guess rate | GuessWithKanji README table |
