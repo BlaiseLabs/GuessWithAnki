@@ -4,7 +4,7 @@ the voice when a word needs spelling out (Japanese words in romaji, dictionary n
 SECTIONS = [
     ("intro", [
         ("i01", "I've watched this happen so many times. Someone who's really good at Japanese sees a word they've never seen before, and they just know it. The reading, the meaning, all of it."),
-        ("i02", "And to me, honestly, that looked like black magic. So this video is about how I stopped thinking it was magic, using a bit of computer science and some Python."),
+        ("i02", "And to me, honestly, that looked like black magic. So this video is basically me going from 'that's black magic' to actually understanding what's going on, with a little computer science and, yeah, some Python."),
     ]),
     ("disclaimer", [
         ("d01", "Okay, quick disclaimer before we get into it. Later on you're going to see numbers like two times faster, maybe even six times faster."),
@@ -110,7 +110,7 @@ BLOCKS = [
 # how the voice is told to say a word (the user's picks from the pronunciation samples, 2026-10-26)
 RESPELL = [(r"\bAnki\b", "Ahnkey"), (r"\bkanji", "kaanji")]
 # segments read by the user, not the clone (their recording, converted to the clone's voice)
-RECORDED = {"g06", "g07", "g08"}
+RECORDED = {"i01", "i02", "g06", "g07", "g08"}
 
 
 def segments():
