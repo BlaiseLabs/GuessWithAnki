@@ -1,6 +1,6 @@
 **search**. Which notes to plan, as an Anki search (for example `deck:Japanese`). Empty means every note whose type has a word field.
 
-**profile**. What kind of deck it is, `japanese`, `chinese`, `english`, `medical`, or `auto`. The default, `auto`, tells it from the fields' text, and a medical deck is told by its terms (`-itis`, `cardi`, `hyper-` and so on). Set it when a deck mixes kinds, or when a medical deck reads as everyday English.
+**profile**. What kind of deck it is, `japanese`, `chinese`, `korean`, `english`, `medical`, or `auto`. The default, `auto`, tells it from the fields' text (Hangul means Korean), and a medical deck is told by its terms (`-itis`, `cardi`, `hyper-` and so on). Set it when a deck mixes kinds, or when a medical deck reads as everyday English.
 
 **fields**. The field names to use for `word`, `reading` and `meaning` when the automatic guess (Expression, Reading, Meaning, Simplified, Pinyin, Term, Definition and common variants) picks the wrong ones. A word field written with furigana (`漢字[かんじ]`) needs no reading field, and English and medical decks need none either.
 

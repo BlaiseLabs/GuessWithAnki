@@ -95,3 +95,45 @@ def test_affix_cards_teach_their_parts():
     assert word.pieces == ["hepat", "-itis"]
     assert llm.todo([card, word], type("S", (), {"records": []})(), "m") == [word]
     model.set_profile("japanese")
+
+
+def test_korean_decks_are_detected_and_split_with_their_hanja():
+    assert detect(["학교", "학생", "먹다", "눈물"]) == "korean"
+    assert detect_profile({0: ["학교", "학생", "먹다"], 1: ["school", "student", "to eat"]}) == "korean"
+    ko = profiles.get("korean")
+    assert ko.accept("학교") and ko.accept("공부하다") and not ko.accept("school") and not ko.accept("学校")
+    assert ko.canon("학 (學)") == "학(學)" and ko.canon("-하다") == "-하다"
+    assert ko.canon("학(學)") != ko.canon("학(鶴)")             # (one syllable, two characters: two pieces)
+    assert ko.word_reading("학교 (學校)", "") == ("학교", "")
+
+
+def test_korean_labels_name_each_syllables_hanja():
+    model.set_profile("korean")
+    it = model.Item(nid=1, word="학교", reading="", meaning="school")
+    schema = llm.schema_for([it])
+    part = schema["properties"]["words"]["items"]["properties"]["parts"]["items"]["properties"]
+    assert set(part) == {"p", "h", "m"}
+    assert "Hanja" in llm.prompt_for([it])
+    text = json.dumps({"words": [{"w": "학교", "parts": [{"p": "학", "h": "學", "m": "study"}, {"p": "교", "h": "校", "m": "school"}],
+                                  "meaning": "yes", "why_m": "study + school building"}]})
+    rec = llm.parse(text, [it], "m")[0]
+    assert rec["pieces"] == [["학(學)", "study"], ["교(校)", "school"]] and rec["meaning_guessable"] == "yes"
+    it.set_parts(rec["pieces"])
+    it.meaning_g = 1.0
+    assert it.pieces == ["학(學)", "교(校)"] and model.guessable(it, {"guessable": {"reading": 0.6, "meaning": 0.6}})
+    model.set_profile("japanese")
+
+
+def test_the_path_brings_in_korean_parts_first():
+    model.set_profile("korean")
+    words = [("학교", [("학(學)", "study"), ("교(校)", "school")]), ("학생", [("학(學)", "study"), ("생(生)", "life")]),
+             ("교실", [("교(校)", "school"), ("실(室)", "room")])]
+    items = []
+    for i, (w, parts) in enumerate(words):
+        it = model.Item(nid=i, word=w, reading="", meaning=w)
+        it.set_parts(parts)
+        items.append(it)
+    order, _ = plan([], items, {"학교|"}, {"window": 40, "ahead": 10, "setup": 0.1})
+    assert order[-1].word == "학교"                                  # (after 학생 and 교실 bring in 학 and 교)
+    assert count_guessable([], order, {"학교|"}, {"window": 40}) == 1
+    model.set_profile("japanese")

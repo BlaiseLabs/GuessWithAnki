@@ -66,6 +66,27 @@ Reply as JSON: {{"words": [{{"w": "<term>", "parts": [{{"p": "<part>", "m": "<me
 TERMS
 {words}"""
 
+PROMPT_KOREAN = """You are helping a learner of Korean. They learn words one by one and know the parts they have met before.
+For each word below:
+
+1. parts: split the word into the meaningful parts a learner would recognise. Split Sino-Korean words all the way
+   down to single syllables, each with the Hanja it comes from (남동생 = 남 男 + 동 同 + 생 生, never 동생 as one part).
+   Native Korean words inside a compound stay whole (눈물 = 눈 eye + 물 water), and meaningful suffixes count as
+   parts, such as -하다 (do) or -적 (-ic). Do not split off the bare dictionary ending -다, and do not split a native
+   word into syllables. Give each part in Hangul (p), its Hanja if it is Sino-Korean (h, otherwise an empty string),
+   and a short meaning (m, 1-4 words). A word that does not break into at least two meaningful parts gets an empty
+   list.
+2. meaning: could a learner who knows what each part means work out what the WORD means?
+   "yes"    the meaning follows directly from the parts (학 學 study + 교 校 school = 학교, school)
+   "partly" the parts point in the right direction, but a real leap or extra knowledge is needed
+   "no"     the parts give little or a misleading clue (or the word has no parts)
+
+Reply as JSON: {{"words": [{{"w": "<word>", "parts": [{{"p": "<Hangul>", "h": "<Hanja or empty>", "m": "<meaning>"}}],
+"meaning": "yes|partly|no", "why_m": "<at most 12 words>"}}]}}
+
+WORDS
+{words}"""
+
 PARTS = {
     "english": dict(who="English (a non-native speaker building vocabulary)",
                     parts="prefixes, roots, suffixes, or the words inside a compound",
@@ -83,6 +104,8 @@ def prompt_for(batch):
     words = "\n".join(line(it) for it in batch)
     if p.name == "chinese":
         return PROMPT_CHINESE.format(words=words)
+    if p.name == "korean":
+        return PROMPT_KOREAN.format(words=words)
     if p.name in PARTS:
         return PROMPT_PARTS.format(words=words, **PARTS[p.name])
     return PROMPT.format(words=words)
@@ -98,6 +121,9 @@ def schema_for(batch):
     if not profile().reads:
         part = {"type": "object", "required": ["p", "m"], "additionalProperties": False,
                 "properties": {"p": {"type": "string"}, "m": {"type": "string"}}}
+        if profile().name == "korean":                 # (and the Hanja each Sino-Korean syllable comes from)
+            part = {"type": "object", "required": ["p", "h", "m"], "additionalProperties": False,
+                    "properties": {"p": {"type": "string"}, "h": {"type": "string"}, "m": {"type": "string"}}}
         item = {"type": "object", "required": ["w", "parts", "meaning", "why_m"], "additionalProperties": False,
                 "properties": {"w": {"type": "string", "enum": words}, "parts": {"type": "array", "items": part},
                                "meaning": LEVEL, "why_m": {"type": "string"}}}
@@ -138,7 +164,8 @@ def parse(text, batch, model):
     for it in batch:
         x = got.get(it.word)
         if x and not reads and x.get("meaning") in ("yes", "partly", "no"):
-            parts = [[str(q.get("p", "")).strip(), str(q.get("m", "")).strip()] for q in x.get("parts") or []
+            parts = [[str(q.get("p", "")).strip() + ("(%s)" % str(q.get("h")).strip() if str(q.get("h") or "").strip() else ""),
+                      str(q.get("m", "")).strip()] for q in x.get("parts") or []
                      if isinstance(q, dict) and str(q.get("p", "")).strip()]
             out.append({"word": it.word, "reading": it.reading, "meaning_guessable": x["meaning"] if len(parts) >= 2 else "no",
                         "pieces": parts, "why_meaning": x.get("why_m", ""), "source": "llm", "model": model})

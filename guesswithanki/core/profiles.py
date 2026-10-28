@@ -319,7 +319,69 @@ class Medical(Latin):
         return core
 
 
-PROFILES = {p.name: p for p in (Japanese(), Chinese(), English(), Medical())}
+HANGUL = re.compile("[\uac00-\ud7a3]")
+KO_KEEP = re.compile("[^\uac00-\ud7a3\u3400-\u9fff\uf900-\ufaff()]")
+
+
+class Korean(Latin):
+    """Korean words, written in Hangul. A piece is a syllable with the Hanja it comes from (학(學), study), a native
+    word inside a compound (눈 in 눈물), or a meaningful suffix (-하다, do). Decks rarely carry the Hanja, and one
+    syllable can stand for many characters (정 for dozens), so the parts come from a model's labels, which name each
+    syllable's Hanja; without labels, from the table of the parts models found. Judged on meaning only: Hangul is read
+    as it is written."""
+    name, table, unit_name = "korean", "morphemes_korean.json", "word part"
+
+    def accept(self, word):
+        w = word.strip()
+        return 0 < len(w) <= 16 and bool(HANGUL.search(w)) and len(w.split()) <= 3 and not re.search("[A-Za-z]", w)
+
+    def is_affix(self, word):
+        return False
+
+    def canon(self, part):
+        """Hangul and Hanja only, a suffix keeping its hyphen: '학 (學)' -> '학(學)', '-하다' -> '-하다'"""
+        s = part.strip()
+        core = KO_KEEP.sub("", s).replace("()", "")
+        return ("-" + core) if s.startswith("-") and core else core
+
+    def segment(self, word):
+        """[(part, meaning)] by the table, matching each part's Hangul (the fewest parts, at least two)"""
+        T = self._table()
+        w = re.sub(r"\s", "", word)
+        if not T or len(w) < 2:
+            return None
+        keys = {}
+        for k, m in T.items():
+            surface = re.sub(r"\(.*?\)", "", k).strip("-")
+            if surface:
+                keys.setdefault(surface, (k, m))
+        best = {0: []}
+        for i in range(len(w)):
+            if i not in best:
+                continue
+            for j in range(i + 1, len(w) + 1):
+                if w[i:j] in keys:
+                    cand = best[i] + [keys[w[i:j]]]
+                    if j not in best or len(cand) < len(best[j]):
+                        best[j] = cand
+        parts = best.get(len(w))
+        return parts if parts and len(parts) >= 2 else None
+
+    def word_reading(self, word_raw, reading_raw):
+        w = re.sub(r"\s+", " ", kana.clean(word_raw)).strip()
+        w = re.split(r"[(\[;,/]", w)[0].strip()
+        return w, ""
+
+    def content(self, role, v):
+        v = kana.clean(v)
+        if role == "word":
+            return self.accept(v) and len(v) <= 12
+        if role == "reading":
+            return False
+        return len(v) >= 2 and bool(re.search("[A-Za-z]", v))
+
+
+PROFILES = {p.name: p for p in (Japanese(), Chinese(), English(), Medical(), Korean())}
 MEDICAL_HINTS = re.compile(r"(itis|osis|ectomy|otomy|ostomy|algia|emia|aemia|plasty|scopy|pathy|logy|megaly|"
                            r"cardi|hepat|nephr|neur|gastr|derm|hemat|haemat|oste|arthr|cyt|pneum|encephal|myo|"
                            r"hyper|hypo|tachy|brady|dys|leuk|erythr|angi|phleb|thromb|carcin|lymph|cholecyst)", re.I)
@@ -335,6 +397,8 @@ def detect(words):
     if not words:
         return "japanese"
     n = len(words)
+    if sum(1 for w in words if HANGUL.search(w)) >= 0.5 * n:
+        return "korean"
     jp = sum(1 for w in words if any(kana.is_kana(c) for c in w))
     zh = sum(1 for w in words if HAN.search(w) and not any(kana.is_kana(c) for c in w))
     la = sum(1 for w in words if PROFILES["english"].accept(w))
@@ -347,13 +411,16 @@ def detect(words):
 
 
 def detect_profile(samples):
-    """the profile for a deck, from sample values of each field ({field: [values]}): Japanese when a field reads as
-    Japanese words, Chinese when one holds Chinese words, else English or medical by the word field's terms"""
+    """the profile for a deck, from sample values of each field ({field: [values]}): Korean when a field holds Hangul
+    words, Japanese when one reads as Japanese words, Chinese when one holds Chinese words, else English or medical by
+    the word field's terms"""
     best = {}
-    for name in ("japanese", "chinese", "english"):
+    for name in ("korean", "japanese", "chinese", "english"):
         p = PROFILES[name]
         best[name] = max((sum(1 for v in vals if v and p.content("word", v)) / max(1, sum(1 for v in vals if v)), f)
                          for f, vals in samples.items()) if samples else (0, None)
+    if best["korean"][0] >= 0.5:
+        return "korean"
     if best["japanese"][0] >= 0.5 and any(any(kana.is_kana(c) for c in v) for vals in samples.values() for v in vals):
         return "japanese"
     if best["chinese"][0] >= 0.5:

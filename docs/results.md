@@ -2,12 +2,13 @@
 
 The numbers behind the README's tables, from `tools/speedup_table.py`, `tools/guess_index.py` and `tools/fsrs_sim.py`
 (100 days, 20 new cards a day, FSRS-6 with Anki's default parameters at 90% retention, a piece learned after one
-sighting, reviews count as sightings, 4 simulated learners averaged). Labels: gpt-5.6-terra, reasoning effort low,
-batches of 25 words, the add-on's heuristics off (`"sources": {"crowd": 3, "deck": 3, "llm": 1, "heuristic": 0}`).
+sighting, reviews count as sightings, 4 simulated learners averaged). The labels came from gpt-5.6-terra (gpt-6.1-terra
+for the Korean decks), with reasoning effort low, batches of 25 words and the add-on's heuristics off
+(`"sources": {"crowd": 3, "deck": 3, "llm": 1, "heuristic": 0}`).
 
 ## Speed-up at every guess rate
 
-Cards learned to reach a number of words: deck order → GuessWithAnki.
+Cards learned to reach a number of words, in deck order → GuessWithAnki.
 
 | Deck | Guess rate | 100 words | 250 words | 500 words | 1,000 words |
 |---|---|---|---|---|---|
@@ -31,6 +32,21 @@ Cards learned to reach a number of words: deck order → GuessWithAnki.
 |  | 50% | **1.6×** (100 → 61) | **1.5×** (243 → 163) | **1.4×** (482 → 333) | **1.3×** (947 → 711) |
 |  | 33% | **1.3×** (100 → 78) | **1.2×** (246 → 198) | **1.2×** (489 → 397) | **1.2×** (963 → 820) |
 |  | 25% | **1.2×** (100 → 81) | **1.2×** (248 → 209) | **1.2×** (494 → 420) | **1.1×** (974 → 858) |
+| Korean Vocabulary by Evita, first 3,000 (3,000 words, 1,171 guessable) | 100% | **2.3×** (99 → 42) | **2.2×** (248 → 115) | **1.9×** (490 → 260) | **1.7×** (954 → 575) |
+|  | 80% | **1.8×** (99 → 54) | **1.7×** (248 → 146) | **1.6×** (492 → 310) | **1.5×** (965 → 664) |
+|  | 50% | **1.4×** (100 → 69) | **1.4×** (249 → 182) | **1.3×** (495 → 376) | **1.3×** (979 → 778) |
+|  | 33% | **1.3×** (100 → 78) | **1.2×** (249 → 202) | **1.2×** (496 → 420) | **1.1×** (984 → 858) |
+|  | 25% | **1.1×** (100 → 88) | **1.1×** (250 → 222) | **1.1×** (497 → 446) | **1.1×** (988 → 906) |
+| 2k Essential Beginner Vocab (1,793 words, 562 guessable) | 100% | **2.5×** (99 → 40) | **2.0×** (240 → 118) | **1.5×** (481 → 312) | **1.2×** (948 → 808) |
+|  | 80% | **2.0×** (99 → 50) | **1.7×** (242 → 142) | **1.4×** (486 → 350) | **1.1×** (962 → 846) |
+|  | 50% | **1.5×** (100 → 65) | **1.4×** (246 → 180) | **1.2×** (490 → 403) | **1.1×** (976 → 901) |
+|  | 33% | **1.3×** (100 → 74) | **1.2×** (248 → 204) | **1.1×** (495 → 436) | **1.1×** (982 → 934) |
+|  | 25% | **1.2×** (100 → 86) | **1.1×** (248 → 219) | **1.1×** (496 → 454) | **1.0×** (987 → 953) |
+| TTMIK My First 500 Words (500 words, 127 guessable) | 100% | **1.1×** (100 → 90) | **1.0×** (249 → 240) | **1.0×** (493 → 490) | – |
+|  | 80% | **1.1×** (100 → 92) | **1.0×** (249 → 242) | **1.0×** (495 → 492) | – |
+|  | 50% | **1.1×** (100 → 95) | **1.0×** (249 → 245) | **1.0×** (497 → 495) | – |
+|  | 33% | **1.0×** (100 → 96) | **1.0×** (250 → 246) | **1.0×** (498 → 496) | – |
+|  | 25% | **1.0×** (100 → 97) | **1.0×** (250 → 247) | **1.0×** (500 → 497) | – |
 | 4000 Essential English Words (3,596 words, 731 guessable) | 100% | **2.1×** (100 → 48) | **1.9×** (249 → 133) | **1.5×** (493 → 321) | **1.2×** (978 → 784) |
 |  | 80% | **1.7×** (100 → 57) | **1.6×** (249 → 156) | **1.4×** (494 → 356) | **1.2×** (983 → 827) |
 |  | 50% | **1.4×** (100 → 69) | **1.3×** (250 → 188) | **1.2×** (496 → 410) | **1.1×** (991 → 890) |
@@ -75,6 +91,18 @@ reviews answered Again.
 |  | 30 | 600 | 40 → **287** | 3,741 → **2,974** (-21%) | 152 → **75** |
 |  | 60 | 1,200 | 128 → **510** | 8,646 → **7,028** (-19%) | 396 → **233** |
 |  | 90 | 1,800 | 255 → **566** | 14,002 → **12,573** (-10%) | 668 → **555** |
+| Korean Vocabulary by Evita, first 3,000 | 14 | 280 | 2 → **116** | 1,664 → **1,258** (-24%) | 108 → **39** |
+|  | 30 | 600 | 12 → **222** | 4,198 → **3,276** (-22%) | 280 → **127** |
+|  | 60 | 1,200 | 52 → **360** | 9,799 → **7,833** (-20%) | 663 → **352** |
+|  | 90 | 1,800 | 123 → **370** | 15,872 → **13,866** (-13%) | 1062 → **758** |
+| 2k Essential Beginner Vocab | 14 | 280 | 8 → **117** | 1,615 → **1,218** (-25%) | 92 → **35** |
+|  | 30 | 600 | 16 → **152** | 4,095 → **3,460** (-16%) | 246 → **156** |
+|  | 60 | 1,200 | 56 → **155** | 9,715 → **8,864** (-9%) | 641 → **527** |
+|  | 90 | 1,793 | 122 → **155** | 15,924 → **15,335** (-4%) | 1086 → **1006** |
+| TTMIK My First 500 Words | 14 | 280 | 1 → **8** | 1,613 → **1,616** (+0%) | 88 → **96** |
+|  | 30 | 500 | 5 → **8** | 3,674 → **3,692** (+0%) | 240 → **239** |
+|  | 60 | 500 | 5 → **8** | 4,776 → **4,778** (+0%) | 328 → **325** |
+|  | 90 | 500 | 5 → **8** | 5,371 → **5,365** (-0%) | 376 → **373** |
 | 4000 Essential English Words | 14 | 280 | 1 → **104** | 1,665 → **1,330** (-20%) | 109 → **62** |
 |  | 30 | 600 | 9 → **154** | 4,228 → **3,610** (-15%) | 282 → **192** |
 |  | 60 | 1,200 | 28 → **175** | 10,024 → **8,882** (-11%) | 714 → **526** |
@@ -94,17 +122,20 @@ reviews answered Again.
 
 ## The start of each path
 
-The first cards GuessWithAnki plans for a new learner (excerpts, in order; \* = arrives guessable, pieces in brackets).
+The first cards GuessWithAnki plans for a new learner, as excerpts in order. A \* marks a word that arrives guessable, and pieces are in brackets.
 
-- **New HSK 3.0:** 子 人 大 \*大大 到 出 好 \*好好 \*好人 开 大学生 \*开学 \*人生 \*出生 上来 \*上学 \*来到 中年
+- **New HSK 3.0.** 子 人 大 \*大大 到 出 好 \*好好 \*好人 开 大学生 \*开学 \*人生 \*出生 上来 \*上学 \*来到 中年
   \*中学 \*学年 发 \*出发 \*发出 \*发生 \*开发 中心 \*心中 \*开心 楼下 \*下楼 \*下来 \*楼上
-- **Oxford 3000:** pleased[please+ed] \*pleasing separation[separate+ion] \*separated \*separately
+- **Oxford 3000.** pleased[please+ed] \*pleasing separation[separate+ion] \*separated \*separately
   unemployment[un+employ+ment] \*employment \*employer \*unemployed expectation[expect+ation] \*unexpected
   \*expected disapprove[dis+approve] \*approving \*disapproving \*disapproval \*approval
-- **4000 Essential English Words:** independent[in+depend+ent] \*independence \*dependence satisfaction[satisfy+ation]
+- **4000 Essential English Words.** independent[in+depend+ent] \*independence \*dependence satisfaction[satisfy+ation]
   \*dissatisfy \*dissatisfied advise[ad+vis] \*vision horrible[horror+ible] \*horrified \*horrifying
-- **Hippocrates Code roots, then the terms:** ante- brachi- \*antebrachium acr- phob- \*acrophobia -pathy \*acropathy
+- **Hippocrates Code roots, then the terms.** ante- brachi- \*antebrachium acr- phob- \*acrophobia -pathy \*acropathy
   de- press- \*antidepressants \*depressor per- flect-, flex \*flexor
+- **Korean Vocabulary by Evita.** 외국인[외(外)+국(國)+인(人)] \*외국 한국어[한(韓)+국(國)+어(語)] \*한국 \*국어 \*외국어 \*한국인
+  한식[한(韓)+식(食)] \*외식하다 학생[학(學)+생(生)] \*인생 생년월일 \*생일 \*학년 중국집 \*일식집 \*한식집 인간 \*간식 \*중간
+  남편 \*남학생 \*편하다 자녀 \*남자 \*남녀 출입 \*입학하다 \*출입국 \*외출하다 식구 \*출구 \*입구
 
 ## Labelling cost
 
@@ -117,6 +148,11 @@ The first cards GuessWithAnki plans for a new learner (excerpts, in order; \* = 
 | 4000 Essential English Words | 3,596 | 383k |
 | Oxford 3000 | 3,377 | 425k |
 | Medical Terminology with Etymology + Hippocrates Code | 657 | 91k |
-| **Total** | **16,331** | **2.12M** |
+| **Total, gpt-5.6-terra** | **16,331** | **2.12M** |
+| Korean Vocabulary by Evita, first 3,000 | 3,000 | 268k |
+| 2k Essential Beginner Vocab | 1,793 | 147k |
+| TTMIK My First 500 Words | 500 | 38k |
+| **Total, gpt-6.1-terra** | **5,293** | **about 460k** |
 
-About 130 tokens a word. A card for a word part (`-itis`) is not labelled: it has nothing to guess.
+About 130 tokens a word, and closer to 90 for Korean. A card for a word part (`-itis`) is not labelled, since it has
+nothing to guess.

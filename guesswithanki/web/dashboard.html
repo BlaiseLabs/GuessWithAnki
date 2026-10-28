@@ -52,7 +52,9 @@ function render(){
   const U={japanese:['kanji','kanji readings','kanji · reading','read kanji by kanji','read as a whole','kana only','kanji'],
     chinese:['characters','character readings','character · pinyin','read character by character','not split','without characters','character'],
     english:['word parts','word parts','word part','split into parts','one part','not split','part'],
-    medical:['word parts','word parts','word part','split into parts','one part','not split','part']}[P.name]||[];
+    medical:['word parts','word parts','word part','split into parts','one part','not split','part'],
+    korean:['word parts','word parts','word part','split into parts','one part','not split','part']}[P.name]||
+    ['word parts','word parts','word part','split into parts','one part','not split','part'];
   let h='<h1>GuessWithAnki</h1><div class="sub">'+esc(D.settings.search)+' · planned '+esc(D.at||'')+(D.seconds!=null?' in '+D.seconds+' s':'')+(D.moved!=null?' · '+D.moved+' cards moved':'')+'</div>';
   for(const w of D.warnings||[])h+='<div class="panel warn" style="margin-top:10px">Deck options: '+esc(w)+' (set new card gather order to "Deck" or "Ascending position", and sort order to "Order gathered" or "Card type, then order gathered")</div>';
   if(D.note)h+='<div class="panel sub" style="margin-top:10px">'+esc(D.note).replace('ollama.com','<a href="https://ollama.com">ollama.com</a>')+'</div>';

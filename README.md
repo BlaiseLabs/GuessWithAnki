@@ -5,11 +5,12 @@
 The sequel to [GuessWithKanji](https://github.com/BlaiseLabs/GuessWithKanji). GuessWithKanji orders a Japanese deck so
 each word arrives right after the kanji it is built from, read the way the word reads them, so you can guess it on
 first sight instead of memorizing it. GuessWithAnki asks whether that works beyond Japanese. The same approach covers
-four kinds of deck, Japanese, Chinese, English for learners, and medical terminology.
+five kinds of deck, Japanese, Chinese, Korean, English for learners, and medical terminology.
 
 ```
 Japanese  電車 でんしゃ, 天気 てんき (studied)  ->  電気 でんき   電 read でん + 気 read き, electric + spirit = electricity
 Chinese   开 kāi, 大学生 dàxuéshēng (studied)  ->  开学 kāixué   open + study = the start of term
+Korean    학생 haksaeng, 교실 gyosil (studied)    ->  학교 hakgyo    학 學 study + 교 校 school = school
 English   unemployment (studied)              ->  employer       employ + -er = one who employs
 Medical   acr- (extremity), phob- (fear)       ->  acrophobia     fear of heights (of the extremes)
 ```
@@ -21,8 +22,9 @@ upgrade for sharper meaning judgments and model labels (see [Install](#install))
 
 ## Does it work across languages?
 
-Yes for Chinese and Japanese, partly for English, and only with a roots deck for medicine. Eight decks, two per
-community, picked from what each community recommends to beginners on Reddit (see [The decks](#the-decks)).
+Yes for Chinese and Japanese, mostly for Korean, partly for English, and only with a roots deck for medicine. Eleven
+decks, two or three per community, picked from what each community recommends to beginners on Reddit (see
+[The decks](#the-decks)).
 
 #### How much of each deck is guessable
 
@@ -36,6 +38,9 @@ the guessable words that arrive with all their pieces already met, in the first 
 | Core 2k | Japanese | 2,000 | 80% | 78% | 95% | **60%** | 55% | 2 → **295** |
 | New HSK 3.0, levels 1–4 | Chinese | 3,245 | 100% | 74% | 96% | **71%** | 90% | 31 → **373** |
 | HSK (2012), levels 1–5 | Chinese | 2,495 | 100% | 68% | 97% | **66%** | 64% | 7 → **308** |
+| Korean Vocabulary by Evita, first 3,000 | Korean | 3,000 | 66% | 59% | – | **39%** | 60% | 3 → **238** |
+| 2k Essential Beginner Vocab | Korean | 1,793 | 55% | 57% | – | **31%** | 48% | 7 → **189** |
+| TTMIK My First 500 Words | Korean | 500 | 44% | 58% | – | **25%** | 13% | 2 → **10** |
 | 4000 Essential English Words | English | 3,596 | 42% | 49% | – | **20%** | 43% | 1 → **175** |
 | Oxford 3000 | English | 3,377 | 41% | 66% | – | **27%** | 47% | 0 → **241** |
 | Medical Terminology with Etymology | medical | 512 | 47% | 58% | – | **27%** | 29% | 14 → **31** |
@@ -58,6 +63,12 @@ right once its pieces are learned (rows for 50%, 33% and 25% are in `docs/result
 |  | 80% | **2.5×** (96 → 38) | **2.3×** (223 → 97) | **2.0×** (392 → 200) | **1.8×** (762 → 422) |
 | HSK (2012), levels 1–5 | 100% | **3.1×** (100 → 32) | **2.7×** (238 → 88) | **2.4×** (467 → 191) | **2.0×** (887 → 444) |
 |  | 80% | **2.2×** (100 → 46) | **2.0×** (240 → 122) | **1.8×** (473 → 256) | **1.6×** (910 → 557) |
+| Korean Vocabulary by Evita, first 3,000 | 100% | **2.3×** (99 → 42) | **2.2×** (248 → 115) | **1.9×** (490 → 260) | **1.7×** (954 → 575) |
+|  | 80% | **1.8×** (99 → 54) | **1.7×** (248 → 146) | **1.6×** (492 → 310) | **1.5×** (965 → 664) |
+| 2k Essential Beginner Vocab | 100% | **2.5×** (99 → 40) | **2.0×** (240 → 118) | **1.5×** (481 → 312) | **1.2×** (948 → 808) |
+|  | 80% | **2.0×** (99 → 50) | **1.7×** (242 → 142) | **1.4×** (486 → 350) | **1.1×** (962 → 846) |
+| TTMIK My First 500 Words | 100% | **1.1×** (100 → 90) | **1.0×** (249 → 240) | **1.0×** (493 → 490) | – |
+|  | 80% | **1.1×** (100 → 92) | **1.0×** (249 → 242) | **1.0×** (495 → 492) | – |
 | 4000 Essential English Words | 100% | **2.1×** (100 → 48) | **1.9×** (249 → 133) | **1.5×** (493 → 321) | **1.2×** (978 → 784) |
 |  | 80% | **1.7×** (100 → 57) | **1.6×** (249 → 156) | **1.4×** (494 → 356) | **1.2×** (983 → 827) |
 | Oxford 3000 | 100% | **2.6×** (100 → 39) | **2.3×** (249 → 107) | **1.9×** (492 → 255) | **1.4×** (970 → 714) |
@@ -74,6 +85,12 @@ right once its pieces are learned (rows for 50%, 33% and 25% are in `docs/result
   word. It keeps a 1.6–1.8× lead at 1,000 words at an 80% guess rate, where the Japanese decks are down to 1.2–1.4×.
 - **Japanese is close behind.** About 60% of a beginner deck is guessable, and the gain is largest in the first few
   hundred words.
+- **Korean sits between Japanese and English.** Most Korean vocabulary is Sino-Korean, built from syllables that each
+  come from a Chinese character (학 from 學, study), so 학생 (student) and 교실 (classroom) give away 학교 (school).
+  Native Korean words and loanwords don't split, so about a third of a beginner deck is guessable. In Evita's deck the
+  gain holds up well, 1.6× at 500 words and still 1.5× at 1,000 at an 80% guess rate, and forgotten reviews by day 30
+  fall from 280 to 127. A small, varied deck like TTMIK's first 500 words gains almost nothing, because its pieces
+  rarely come back.
 - **English works for a fifth to a quarter of a learner's deck.** The guessable words are derived forms, like employ,
   then employer, employment, unemployed, or separate, then separately, separation. It gives 1.7–2.1× for the first 100
   words at 80%, fading to 1.2–1.3× by 1,000. English has no reading to guess, and most common English words do not split.
@@ -90,7 +107,8 @@ right once its pieces are learned (rows for 50%, 33% and 25% are in `docs/result
 #### How it was measured
 
 Each deck was imported fresh (no prior knowledge), and every word was labelled by one model, gpt-5.6-terra (16,331
-words, about 2.1M tokens, with the add-on's heuristics off). Then a learner was simulated day by day for 100 days at 20
+words, about 2.1M tokens), or gpt-6.1-terra for the Korean decks (5,293 words, about 460,000 tokens), with the add-on's
+heuristics off. Then a learner was simulated day by day for 100 days at 20
 new cards a day under FSRS-6 (Anki's default parameters, 90% retention), every review done, 4 simulated learners
 averaged. Every day a word is shown counts as a sighting of its pieces, each piece has an FSRS memory of its own, and a
 piece is learned after one sighting. GuessWithAnki's order was planned once at the start (the add-on plans again after
@@ -106,18 +124,20 @@ What a piece is depends on the deck, so each kind of deck gets a **profile** tha
 | Profile | A piece is | Split by | Guessable when | Data |
 |---|---|---|---|---|
 | japanese | a kanji with the reading it has in the word (会 read かい) | the reading field, aligned to the kanji (with rendaku and small tsu) | meaning and reading follow from the pieces | KANJIDIC2, JMdict |
+| korean | a Sino-Korean syllable with the Hanja it comes from (학(學), study), a native word inside a compound (눈 in 눈물), or a suffix such as -하다 | the model, which names each syllable's Hanja so that one syllable from two characters stays two pieces, or without one, a table of the parts it found | meaning follows (Hangul is read as written) | model labels |
 | chinese | a character with its pinyin syllable and tone (电 read dian4) | the pinyin field, split into as many syllables as the word has characters (tone marks, tone numbers, spaces or none) | meaning and pinyin follow | CC-CEDICT |
 | english | a prefix, root, suffix, or a word inside a compound (un-, employ, -ment) | the model, which gives each word's parts with their meanings, or without one, a table of the parts it found in the decks above (longest match) | meaning follows | model labels |
 | medical | a Greek or Latin prefix, root or suffix (hepat, -itis), and a card for a word part itself (`cardi/o`, `-itis`) teaches that part | as english, and parts match across spellings (cardi/o, cardio and cardi are one root) | meaning follows | model labels |
 
-The profile is told from the deck's fields (kana means Japanese, hanzi without kana Chinese, Latin letters English,
-medical when the terms look medical), or you can set `profile` to choose. The planner is the same greedy path as
+The profile is told from the deck's fields (Hangul means Korean, kana Japanese, hanzi without kana Chinese, Latin
+letters English, medical when the terms look medical), or you can set `profile` to choose. The planner is the same greedy path as
 GuessWithKanji. It picks the next card that makes the most words guessable soon, and when nothing is guessable it
 brings in a plain word with one new piece.
 
 ## The decks
 
-Picked from about 1,600 Reddit threads read through Reddit's API (438 for Chinese, 280 for English, 900 for medicine).
+Picked from about 2,200 Reddit threads read through Reddit's API (438 for Chinese, 280 for English, 900 for medicine,
+622 for Korean).
 A mention is a post or comment that names or links the deck. The full notes are in
 [docs/deck_research.md](docs/deck_research.md).
 
@@ -129,6 +149,9 @@ A mention is a post or comment that names or links the deck. The full notes are 
 | English | [English] The Oxford 3000 Most Important Words | `1575087857` | all | about 7 (Oxford lists) |
 | medical | Medical Terminology & Abbreviations With Etymology | `1220822549` | all | 0 (the best text fit) |
 | medical | The Hippocrates Code: Medical Greek and Latin | `1645339321` | the 980 word-part cards, studied before the terms deck | 0 |
+| Korean | Korean Vocabulary by Evita | `4066961604` | the first 3,000 of 6,500 words | 57 (and 7 links) |
+| Korean | 2k Essential Beginner Vocab by Mar (for Darakwon's 2000 Essential Words for Beginners) | `1367759589` | all | 70 for the 2,000-word lists |
+| Korean | LoveofLearningKorean's My First 500 Words (TTMIK) | `1799066060` | all | 271 for TTMIK, the most named |
 | Japanese | Kaishi 1.5k, Core 2k (the GuessWithKanji decks) | | all | |
 
 Some decks couldn't be tested. Spoonfed Chinese (183 mentions, the most recommended Chinese deck) has sentence cards
@@ -148,6 +171,10 @@ Reddit names most) is scanned images, and AnKing (2,038 mentions) is a deck of m
   in employer. The lower guess-rate rows show what is left when that often fails.
 - **Two decks come shuffled.** 4000 Essential English Words and Oxford 3000 come in a mixed order, so their deck-order
   baseline is what you get with them in Anki, not an order by level.
+- **Korean without a model guesses at the Hanja.** One Korean syllable can come from many characters, and only model
+  labels name the right one. Without them, the built-in table matches syllables by sound and can pick the wrong
+  character (it reads 신사, gentleman, as 信 trust + 事 matter instead of 紳士). Label the deck with a model for
+  accurate Korean parts.
 - **One word per card.** Sentence decks, image decks and fact decks are out of reach.
 
 ## What it does
@@ -158,8 +185,9 @@ Reddit names most) is scanned images, and AnKing (2,038 mentions) is a deck of m
   sentence is ignored. Your study history says which pieces you have met and when.
 - **Splits each word into pieces** by its profile (above). In Japanese a piece is a kanji plus the reading it has in
   that word (だん in both 相談 and 面談), with the regular sound changes (rendaku, small tsu), and the split matches
-  JmdictFurigana for 99.0% of 17,854 common words. In Chinese it's a character plus its pinyin syllable, and in
-  English and medical terms it's the parts a model gives.
+  JmdictFurigana for 99.0% of 17,854 common words. In Chinese it's a character plus its pinyin syllable. In Korean,
+  English and medical terms it's the parts a model gives, and for Korean the model also names the Hanja behind each
+  Sino-Korean syllable.
 - **Judges guessability** from several sources, weighted when they disagree.
   - **Heuristic** (code, tunable). How common the word's reading of each piece is (in the dictionary, your deck, or
     both), and how close the word's meaning is to its pieces' meanings (embedding cosine with EmbeddingGemma, or plain
@@ -313,8 +341,8 @@ manim -qh docs/video/explainer.py Explainer   # the explainer video (Manim Commu
   meanings and readings, the dictionary reading counts and the demo deck. JmdictFurigana (Doublevil, CC BY-SA 4.0)
   for checking the reading splitter.
 - CC-CEDICT (MDBG, CC BY-SA 4.0) for Chinese character meanings, pinyin and reading counts.
-- The English and medical part tables hold the parts and meanings a model (gpt-5.6-terra) gave while labelling the
-  decks measured above, and no deck text. The derived files in `guesswithanki/data/` are shared under CC BY-SA 4.0.
+- The English, medical and Korean part tables hold the parts and meanings a model (gpt-5.6-terra, and gpt-6.1-terra
+  for Korean) gave while labelling the decks measured above, and no deck text. The derived files in `guesswithanki/data/` are shared under CC BY-SA 4.0.
 - FSRS, by the open-spaced-repetition project. `tools/fsrs_sim.py` reimplements the FSRS-6 formulas of py-fsrs.
 - Gemma and EmbeddingGemma (Google) through Ollama for the model labels and meaning similarity, and gpt-5.6-terra
   (OpenAI) for the labels behind the results.
