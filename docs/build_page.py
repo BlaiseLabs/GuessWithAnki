@@ -1,5 +1,5 @@
-"""The GitHub Pages article (docs/index.html), from docs/article/article.md: the intro through section 4 of How I Built
-It, plus The Lazy Payoff. Images are served from the site itself; the video is embedded at the top.
+"""The GitHub Pages article (docs/index.html), built from docs/page.md, the page's own text in the author's words.
+Images are served from the site itself, and the video is embedded at the top.
 
     python3 docs/build_page.py"""
 import html
@@ -14,24 +14,18 @@ VIDEO = "j-xJ8mhyt0E"
 
 
 def sections(md):
-    body = md.split("---", 2)[2]
     title = re.search(r'^title: "(.*)"$', md, re.M).group(1)
-    lines = body.splitlines()
-    start = next(i for i, l in enumerate(lines) if l.startswith("I've seen this happen"))
-    stop = next(i for i, l in enumerate(lines) if l.startswith("### 5."))
-    lazy = next(i for i, l in enumerate(lines) if l.startswith("## The Lazy Payoff"))
-    lazy_end = next(i for i, l in enumerate(lines) if l.startswith("## Prize Categories"))
-    return title, "\n".join(lines[start:stop] + [""] + lines[lazy:lazy_end])
+    return title, md.split("---", 2)[2].strip()
 
 
 def main():
-    md = (HERE / "article" / "article.md").read_text(encoding="utf-8")
+    md = (HERE / "page.md").read_text(encoding="utf-8")
     title, text = sections(md)
     text = text.replace("https://raw.githubusercontent.com/BlaiseLabs/GuessWithAnki/main/docs/", "")
     content = markdown.markdown(text, extensions=["tables"])
     content = content.replace("<img ", '<img loading="lazy" ')
     desc = ("Measuring how often you can guess a word you've never seen, from the pieces it's built from, and an Anki "
-            "add-on that orders your cards so more words arrive guessable. Japanese, Chinese, English and medicine.")
+            "add-on that orders your cards so more words arrive guessable. Japanese, Chinese, Korean, English and medicine.")
     page = TEMPLATE.format(title=html.escape(title), desc=html.escape(desc), site=SITE, video=VIDEO, content=content)
     (HERE / "index.html").write_text(page, encoding="utf-8")
     (HERE / ".nojekyll").write_text("")

@@ -4,10 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>GuessWithAnki: Using computer science and Anki to learn more vocabulary with less memorization</title>
-<meta name="description" content="Measuring how often you can guess a word you&#x27;ve never seen, from the pieces it&#x27;s built from, and an Anki add-on that orders your cards so more words arrive guessable. Japanese, Chinese, English and medicine.">
+<meta name="description" content="Measuring how often you can guess a word you&#x27;ve never seen, from the pieces it&#x27;s built from, and an Anki add-on that orders your cards so more words arrive guessable. Japanese, Chinese, Korean, English and medicine.">
 <meta property="og:type" content="article">
 <meta property="og:title" content="GuessWithAnki: Using computer science and Anki to learn more vocabulary with less memorization">
-<meta property="og:description" content="Measuring how often you can guess a word you&#x27;ve never seen, from the pieces it&#x27;s built from, and an Anki add-on that orders your cards so more words arrive guessable. Japanese, Chinese, English and medicine.">
+<meta property="og:description" content="Measuring how often you can guess a word you&#x27;ve never seen, from the pieces it&#x27;s built from, and an Anki add-on that orders your cards so more words arrive guessable. Japanese, Chinese, Korean, English and medicine.">
 <meta property="og:url" content="https://blaiselabs.github.io/GuessWithAnki/">
 <meta property="og:image" content="https://blaiselabs.github.io/GuessWithAnki/article/thumbnail.png">
 <meta property="og:image:width" content="1280">
@@ -43,23 +43,24 @@
 <div class="video"><iframe src="https://www.youtube-nocookie.com/embed/j-xJ8mhyt0E" title="GuessWithAnki video"
   allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
   referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
-<p>I've seen this happen countless times. Someone who's really good at Japanese, usually around N2 or N1, flips through flashcards containing words they swear they've never seen before. Somehow, they already know them. The reading, the meaning, everything.</p>
-<p>As a beginner, I thought it was black magic. Japanese text might as well have been hieroglyphics.</p>
-<p>But after spending enough time with my own vocabulary cards, I started catching myself doing the same thing. I'd see a word I'd never encountered, take a guess at its meaning, flip the card, and find out I was exactly right.</p>
-<p>The first few times, it blew my mind. And it got me wondering. <strong>How often can you actually do this? Is it just luck, or is there a pattern you can rely on?</strong></p>
-<p>I decided to find out with a little computer science and some Python. Then I turned what I learned into an Anki add-on that does the lazy work for you. It arranges your cards so that as many words as possible are already guessable when you first see them.</p>
+<p>I'm still a beginner in Japanese, and I've always been amazed watching more advanced learners go through flashcards full of words they've never seen before and still guess the reading and meaning. To me, Japanese text basically looked like hieroglyphics.</p>
+<p>Then, after a while of doing my own vocab cards, it started happening to me too. Every now and then I'd see a word for the first time, take a guess, flip the card, and be exactly right.</p>
+<p>So I got curious and tried to actually measure how often that's possible, by breaking words into the pieces they're built from and checking whether those pieces give the word away. That led me down a rabbit hole of greedy algorithms and graph theory. The idea is that if you study the right building blocks first, a lot of new words become guessable without having to memorize them individually.</p>
+<p>The result is <a href="https://github.com/BlaiseLabs/GuessWithAnki">GuessWithAnki</a>, an Anki add-on that reorders your deck so you can guess the meaning, and often the pronunciation, of a lot of cards on your first try.</p>
 <p><img loading="lazy" alt="A card for 電気, guessed on first sight" src="article/hero_card.png" /></p>
-<h2>What I Built</h2>
-<p><strong><a href="https://github.com/BlaiseLabs/GuessWithAnki">GuessWithAnki</a></strong> is an Anki add-on that reorders your new cards so that more words become <em>guessable</em> by the time you encounter them.</p>
-<p>The idea is simple. If you've already learned the pieces that make up a word, you might be able to figure out its meaning, and sometimes its reading, without ever having studied the word itself.</p>
-<p>Instead of memorizing every word from scratch, you start recognizing patterns and guessing new words correctly on the first try.</p>
-<p>That's what I call a <em>free card</em>, a word you get right without having to learn it the hard way.</p>
-<p>This project builds on <a href="https://github.com/BlaiseLabs/GuessWithKanji">GuessWithKanji</a>, my original Japanese-only add-on. This time, I wanted to see how far the idea could go beyond Japanese.</p>
-<p>It now supports four types of decks.</p>
+<h2>How it works</h2>
+<p>If you've already learned the pieces that make up a word, you can often figure out what it means without ever having studied the word itself. For example, suppose you've already studied</p>
+<ul>
+<li>電車 (でんしゃ), train</li>
+<li>天気 (てんき), weather</li>
+</ul>
+<p>You've now encountered 電 pronounced as でん and 気 pronounced as き. GuessWithAnki recognizes this and moves 電気 (でんき) (electricity) forward in your deck, since you already know how to read its kanji in this word and have some clues about its meaning. Instead of memorizing 電気 entirely from scratch, you have a good chance of guessing it correctly the first time you see it.</p>
+<p>A card you get right the first time you see it is what I call a free card, since you never had to learn it the hard way. GuessWithAnki looks for the words you're likely to figure out on your own, then puts them right after the cards that teach their pieces.</p>
+<p>This builds on <a href="https://github.com/BlaiseLabs/GuessWithKanji">GuessWithKanji</a>, my first add-on, which only worked for Japanese. This time I wanted to see how far the idea goes beyond Japanese, so it now handles five kinds of decks.</p>
 <table>
 <thead>
 <tr>
-<th>Profile</th>
+<th>Deck</th>
 <th>What counts as a piece</th>
 <th>When a word is guessable</th>
 </tr>
@@ -76,6 +77,11 @@
 <td>Both the meaning and pinyin follow</td>
 </tr>
 <tr>
+<td>Korean</td>
+<td>A syllable with the Chinese character it comes from (학 from 學, study)</td>
+<td>The meaning follows from its parts</td>
+</tr>
+<tr>
 <td>English</td>
 <td>A prefix, root, or suffix (un-, employ, -ed)</td>
 <td>The meaning follows from its parts</td>
@@ -87,27 +93,17 @@
 </tr>
 </tbody>
 </table>
-<h4>Why it rewards laziness</h4>
-<p>The goal is to do less memorizing.</p>
-<p>GuessWithAnki finds the words you're likely to figure out for yourself, then puts them shortly after the cards that teach you their pieces.</p>
-<p>That way, instead of learning every word the hard way, you can let what you already know do some of the work.</p>
+<p>The goal is to reward pattern recognition over memorizing.</p>
+<p>GuessWithAnki encourages this by minimizing the amount of memorization needed to grasp an underlying pattern in a vocabulary deck.</p>
+<p>This has the added effect of improving your memory, and giving you access to skills that are usually reserved for more advanced language learners.</p>
 <h2>Demo</h2>
-<p>The video at the top walks through the whole idea in about nine minutes, including results for all four profiles.</p>
-<p>Here's what the add-on looks like running on a Chinese vocabulary deck in Anki.</p>
+<p>The video at the top walks through the different performance profiles of decks across languages. Below you'll see the potential gains in Chinese vocabulary decks, which are the best suited for this technique.</p>
 <p><img loading="lazy" alt="The GuessWithAnki dashboard on an HSK deck, guessable on arrival 6 → 321" src="video/assets/dashboard_zh.png" /></p>
-<p>Of the next 500 new cards, only <strong>6</strong> are guessable in the deck's original order. With GuessWithAnki, that number jumps to <strong>321</strong>.</p>
-<p>Same cards. Different order.</p>
-<h2>Code</h2>
-<ul>
-<li><strong><a href="https://github.com/BlaiseLabs/GuessWithAnki">BlaiseLabs/GuessWithAnki</a></strong> has the add-on, measurement tools, experimental results, and video source files, including Manim scenes, narration, and build scripts.</li>
-<li><strong><a href="https://github.com/BlaiseLabs/GuessWithKanji">BlaiseLabs/GuessWithKanji</a></strong> is the original Japanese-only version.</li>
-</ul>
+<p>With GuessWithAnki you are able to learn the equivalent of 500 Chinese words with less than 200 words. Just by changing the order you study them in.</p>
 <h2>How I Built It</h2>
-<h3>1. How guessable is a word?</h3>
-<p>I started by looking at how much vocabulary words overlap in the kanji they use.</p>
-<p>If every Japanese word were made up of completely different kanji, guessing would be impossible. Every word would introduce something new.</p>
-<p>But that's not how languages work. The same characters appear again and again, in different combinations.</p>
-<p>The more these pieces overlap, the more opportunities you have to recognize a new word without learning it from scratch.</p>
+<h3>How guessable is a word?</h3>
+<p>I started by looking at how much overlap in kanji there was across words. The more unique kanji there were, the more difficult it would be to guess a word's meaning.</p>
+<p>Luckily for me that's not how Japanese works, and as it turns out there was a large overlap between the words and the kanji they shared.</p>
 <p><img loading="lazy" alt="A piece is a kanji plus the reading it has in that word" src="article/pieces.png" /></p>
 <h4>The reading</h4>
 <p>This part was surprisingly straightforward.</p>
@@ -120,25 +116,22 @@
 <p>Figuring out whether a word's meaning follows from its pieces is trickier.</p>
 <p>I tried two approaches, both using open models.</p>
 <ul>
-<li><strong>Embeddings.</strong> EmbeddingGemma represents each meaning as a point in a vector space. If a word's meaning is close to the meanings of its kanji, there's a good chance you can infer it. After tuning on labelled words, this approach achieved an AUC of 0.83, compared with 0.73 for simple word overlap.</li>
-<li><strong>Asking a model directly.</strong> Gemma 4 runs locally through Ollama and labels words in batches. It judges whether the reading and meaning are predictable, partly predictable, or not predictable, using a JSON schema that specifies the exact words in each batch.</li>
+<li>Embeddings. EmbeddingGemma represents each meaning as a point in a vector space. If a word's meaning is close to the meanings of its kanji, there's a good chance you can infer it. After tuning on labelled words, this approach achieved an AUC of 0.83, compared with 0.73 for simple word overlap.</li>
+<li>Asking a model directly. Gemma 4 runs locally through Ollama and labels words in batches. It judges whether the reading and meaning are predictable, partly predictable, or not predictable, using a JSON schema that specifies the exact words in each batch.</li>
 </ul>
 <h4>My own deck</h4>
 <p>I ran the analysis on my own deck of 2,038 words containing kanji.</p>
 <p>Here's what I found.</p>
 <p><img loading="lazy" alt="Reading 96%, meaning 69% (95% at least a hint), no clue 5%" src="article/guessable_share.png" /></p>
-<p>For <strong>67% of the words, both the reading and meaning were predictable</strong>.</p>
+<p>For 67% of the words, both the reading and meaning were predictable.</p>
 <p>In other words, roughly two out of every three words I was about to study were, at least in theory, words I could have guessed on first sight.</p>
 <p>That was a much bigger share than I'd expected.</p>
 <h3>2. Finding the right order with a greedy algorithm</h3>
-<p>There's a catch, though.</p>
-<p>You can only guess a word if you've already encountered the pieces it's made of.</p>
-<p>For example, you can't guess 電気 from its kanji if you've never learned 電.</p>
-<p>So the problem becomes this. <strong>How do you arrange your cards to maximize the number of words you can guess, while minimizing the number you have to learn from scratch?</strong></p>
-<p>Trying every possible order is out of the question. For 2,000 cards, the number of possible arrangements has 5,736 digits.</p>
-<p>Instead, I used one of the simplest ideas in computer science, a <strong>greedy algorithm</strong>.</p>
-<p>A greedy algorithm builds a solution one step at a time. At each step, it chooses whatever looks most promising right now, without going back to reconsider earlier decisions.</p>
-<p>It doesn't guarantee the perfect solution, but it's fast, and often gets surprisingly close.</p>
+<p>There's a catch, though. You can only guess a word if you've already encountered the pieces it's made of. For example, you can't guess 天気 (てんき) from its kanji if you've never learned 天 read as てん.</p>
+<p>So this basically becomes a max/min problem. How do I maximize the number of guessable Anki cards while minimizing the amount of memorization needed?</p>
+<p>Trying every possible order is out of the question. For 2,000 cards there are about 3.3 × 10<sup>5735</sup> possible orders.</p>
+<p>This basically turns into something a lot like the traveling salesman problem, and one of the simplest ways to approach this is using a greedy algorithm. A greedy algorithm builds a solution one step at a time. At each step, it chooses whatever looks most promising right now, without going back to reconsider earlier decisions.</p>
+<p>It doesn't guarantee the perfect solution, but it's fast, and can get pretty close.</p>
 <p><img loading="lazy" alt="A greedy algorithm takes the best-looking branch at every step" src="article/greedy_tree.png" /></p>
 <p>At every step, the algorithm asks which card should come next.</p>
 <ul>
@@ -148,7 +141,7 @@
 <p>For example, you might study 取る (<em>toru</em>, to take), followed by 戻る (<em>modoru</em>, to return).</p>
 <p>Once you've learned those pieces, 取り戻す (<em>torimodosu</em>, to take back) becomes guessable.</p>
 <p>The algorithm tries to create as many of these little chains as possible.</p>
-<p>On my own deck, this changed the number of guessable words among the next 500 cards from <strong>66 to 307</strong>.</p>
+<p>On my own deck, this changed the number of guessable words among the next 500 cards from 66 to 307.</p>
 <p><img loading="lazy" alt="500 cards, 66 guessable in deck order and 307 on the guessable path" src="article/path_grid.png" /></p>
 <p>That's nearly five times as many words you might be able to figure out without first memorizing them.</p>
 <h3>3. Does it actually help?</h3>
@@ -158,23 +151,21 @@
 <p>The simulated learner studies 20 new cards per day and completes every scheduled review. Reviews follow FSRS-6, Anki's scheduling algorithm, which I reimplemented and checked against py-fsrs.</p>
 <p>Each piece of a word has its own memory state. That memory gradually fades, but gets reinforced whenever another word containing the same piece appears.</p>
 <p>A word can only be guessed if the learner still remembers its pieces.</p>
-<p>The best-case result was pretty wild.</p>
-<p>On a JLPT vocabulary deck, with perfect guessing, a learner would need to learn just <strong>16 cards from scratch to know their first 100 words</strong>. The other 84 could be guessed.</p>
-<p>Of course, nobody guesses perfectly.</p>
-<p>I checked my own Anki review history and found that when a word was guessable and I'd seen its kanji recently, I answered correctly about <strong>73%</strong> of the time.</p>
+<p>On a JLPT vocabulary deck, with perfect guessing, a learner would need to learn just 16 cards from scratch to know their first 100 words. The other 84 could be guessed.</p>
+<p>100% guessing isn't realistic though. This isn't magic, and as learners we're still going to get some words wrong.</p>
+<p>I checked my own Anki review history and found that when a word was guessable and I'd seen its kanji recently, I answered correctly about 73% of the time.</p>
 <p>So I also tested a more realistic 80% guessing rate.</p>
-<p>At that rate, reaching the first 100 words required learning just <strong>35 cards from scratch</strong>, rather than 100.</p>
+<p>At that rate, reaching the first 100 words required learning just 35 cards from scratch, rather than 100.</p>
 <p><img loading="lazy" alt="At 80% guessing, 35 learned and 65 guessed, 2.9×" src="article/free_grid.png" /></p>
-<p>And there was another benefit I hadn't expected. <strong>Less forgetting.</strong></p>
+<p>And there was another benefit I hadn't expected. Less forgetting.</p>
 <p>Every new word reinforces pieces you've already learned. So you're not just accumulating vocabulary. You're repeatedly practicing the patterns behind it.</p>
-<p>In the Core 2k simulation, forgotten reviews by day 30 fell from <strong>189 to 72</strong>.</p>
+<p>In the Core 2k simulation, forgotten reviews by day 30 fell from 189 to 72.</p>
 <p>The same ordering that made words easier to guess also helped keep their building blocks fresh in memory.</p>
 <h3>4. Does it work beyond Japanese?</h3>
-<p>Japanese turned out to be a great fit for this idea. But I wanted to know whether it would work for other subjects too.</p>
-<p>I went through roughly 1,600 Reddit threads using Reddit's API to find the decks learners actually recommend to beginners.</p>
-<p>Then I ran the same experiment on two decks each for Chinese learners, English learners, and medical students.</p>
+<p>Japanese turned out to be a great fit for this idea. But I wanted to know whether it would work for other subjects too.
+Then I ran the same experiment on two decks each for Chinese learners, English learners, and medical students, and three decks for Korean learners.</p>
 <p>The underlying algorithm stays the same. The only thing that changes is what counts as a reusable piece.</p>
-<p>For speed, I used a cloud model to label the 16,331 words across these decks in parallel, processing about 2.1 million tokens. The add-on itself uses Gemma locally, processing one batch at a time.</p>
+<p>For speed, I used a cloud model to label the 21,624 words across these decks in parallel, processing about 2.6 million tokens. The add-on itself uses Gemma locally, processing one batch at a time.</p>
 <p><img loading="lazy" alt="开学, 开 kāi (open) plus 学 xué (study), the start of term" src="article/chinese.png" /></p>
 <p>Here are the results at an 80% guessing rate.</p>
 <table>
@@ -191,42 +182,60 @@
 <td>New HSK 3.0, levels 1–4 (Chinese)</td>
 <td>71%</td>
 <td>392 → 200</td>
-<td><strong>2.0×</strong></td>
+<td>2.0×</td>
 </tr>
 <tr>
 <td>HSK 2012, levels 1–5 (Chinese)</td>
 <td>66%</td>
 <td>473 → 256</td>
-<td><strong>1.8×</strong></td>
+<td>1.8×</td>
 </tr>
 <tr>
 <td>Core 2k (Japanese)</td>
 <td>60%</td>
 <td>481 → 265</td>
-<td><strong>1.8×</strong></td>
+<td>1.8×</td>
 </tr>
 <tr>
 <td>Kaishi 1.5k (Japanese)</td>
 <td>64%</td>
 <td>474 → 282</td>
-<td><strong>1.7×</strong></td>
+<td>1.7×</td>
 </tr>
 <tr>
 <td>Oxford 3000 (English)</td>
 <td>27%</td>
 <td>494 → 303</td>
-<td><strong>1.6×</strong></td>
+<td>1.6×</td>
+</tr>
+<tr>
+<td>Korean Vocabulary by Evita (Korean)</td>
+<td>39%</td>
+<td>492 → 310</td>
+<td>1.6×</td>
+</tr>
+<tr>
+<td>2k Essential Beginner Vocab (Korean)</td>
+<td>31%</td>
+<td>486 → 350</td>
+<td>1.4×</td>
 </tr>
 <tr>
 <td>4000 Essential English Words</td>
 <td>20%</td>
 <td>494 → 356</td>
-<td><strong>1.4×</strong></td>
+<td>1.4×</td>
 </tr>
 <tr>
 <td>Medical Terminology with Etymology</td>
 <td>27%</td>
 <td>482 → 474</td>
+<td>1.0×</td>
+</tr>
+<tr>
+<td>TTMIK My First 500 Words (Korean)</td>
+<td>25%</td>
+<td>495 → 492</td>
 <td>1.0×</td>
 </tr>
 </tbody>
@@ -238,31 +247,33 @@
 <p>And 90% of HSK words share every character with at least one other word.</p>
 <p>That gives the algorithm plenty of reusable pieces to work with.</p>
 <p>The advantage also lasts. Even beyond a thousand words, the optimized order maintains a 1.6–1.8× lead.</p>
+<h4>Korean lands in the middle</h4>
+<p>Korean was a late addition, after someone asked for it.</p>
+<p>Most Korean vocabulary is Sino-Korean, built from syllables that each come from a Chinese character (Hanja). So once you know 학생 (student) and 교실 (classroom), 학교 (school) gives itself away.</p>
+<p>The catch is that native Korean words and loanwords don't split into pieces like that, so only about a third of a beginner deck is guessable.</p>
+<p>Evita's deck still reached 1.6× at 500 words, and kept 1.5× past a thousand. The small TTMIK deck barely moved, since its pieces rarely come back.</p>
 <h4>English is more modest</h4>
-<p>English is a different story.</p>
 <p>Most everyday English words don't break neatly into meaningful pieces. Knowing the spelling of <em>beach</em>, for example, doesn't tell you what it means.</p>
 <p>But word families offer a useful shortcut.</p>
 <p>Once you know <em>employ</em>, words like <em>employer</em>, <em>employment</em>, and <em>unemployed</em> become much easier to figure out.</p>
 <p>The gains aren't as dramatic as in Chinese or Japanese, but they're still meaningful.</p>
 <h4>Medicine was the surprise</h4>
 <p>I initially thought medical terminology would be the perfect use case.</p>
-<p>So many medical terms are built from Greek and Latin roots. Surely those would be easy to recombine?</p>
+<p>So many medical terms are built from Greek and Latin roots. So I figured they would especially benefit from greedy based sorting.</p>
 <p>But the medical terminology deck barely improved on its own.</p>
 <p>The problem was the deck itself. It was relatively small and mixed together technical terms, abbreviations, drug names, and everyday vocabulary. Many roots simply didn't appear often enough to be reused.</p>
-<p>Medical students are often advised to learn the roots first. But with a roots deck placed ahead of the terminology deck, the learner has to get through <strong>982 root cards</strong> before seeing the first medical term, around day 50.</p>
+<p>Medical students are often advised to learn the roots first. But with a roots deck placed ahead of the terminology deck, the learner has to get through 982 root cards before seeing the first medical term, around day 50.</p>
 <p>GuessWithAnki takes a different approach.</p>
 <p>Instead of teaching every root up front, it introduces only the roots needed for the next terms, right before those terms appear.</p>
 <p>That means the learner can start guessing actual medical terminology within the first two weeks.</p>
 <p>So even when the raw speed-up looks small, changing the order can make the learning experience very different.</p>
-<p>Across all four profiles, the pattern became clear. <strong>What matters is how often meaningful pieces get reused, and how reliably they predict the words built from them.</strong></p>
+<p>Across all five profiles, the pattern became clear. What matters is how often meaningful pieces get reused, and how reliably they predict the words built from them.</p>
 <h2>The Lazy Payoff</h2>
 <p>With an 80% guessing rate, the simulation suggests you could reach your first 500 Chinese words while learning only about half as many cards from scratch. Japanese comes close.</p>
 <p>You get more words from less memorization, reinforce the pieces you already know, and spend more of your time recognizing patterns instead of treating every word as something completely new.</p>
 <p>And that's what brings me back to those advanced Japanese learners who seemed to know words they'd never studied.</p>
-<p>What looked like black magic to me as a beginner wasn't magic at all.</p>
-<p><strong>They'd learned enough pieces to start seeing the patterns.</strong></p>
+<p>Now I understand they were able to do this by learning enough pieces to start seeing the patterns in kanji across words.</p>
 <p>GuessWithAnki is my attempt to help the rest of us get there sooner.</p>
-<p><img loading="lazy" alt="Black magic, crossed out, became a pattern" src="article/gaku_end.png" /></p>
 </main>
 <footer>GuessWithAnki is free and open source, on <a href="https://github.com/BlaiseLabs/GuessWithAnki">GitHub</a>.</footer>
 </body>
