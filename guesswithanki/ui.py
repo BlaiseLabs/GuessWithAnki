@@ -280,6 +280,7 @@ def write_into_deck():
 
 def settings():
     from aqt.addons import ConfigEditor
+    mw.mgr = mw.addonManager      # ConfigEditor reads dlg.mgr, and the main window has no such attribute
     ConfigEditor(mw, ADDON, mw.addonManager.getConfig(ADDON))
 
 
